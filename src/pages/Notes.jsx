@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { auth, db } from "../firebase";
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -10,7 +11,6 @@ import {
   query,
   updateDoc,
 } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { FiPlusSquare } from "react-icons/fi";
 import ReactQuill from "react-quill";
@@ -19,13 +19,13 @@ import "react-quill/dist/quill.snow.css";
 const Notes = () => {
   const navigate = useNavigate();
 
-  const [userEmail, setUserEmail] = useState(null);
-  const [notes, setNotes] = useState([]);
+  const [notesList, setNotesList] = useState([]);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   const { noteId } = useParams();
+  const { currentUser } = auth;
 
   const modules = {
     toolbar: {
@@ -40,23 +40,18 @@ const Notes = () => {
   const handleTitleChange = (e) => setTitle(e.target.value);
   const handleContentChange = (value) => setContent(value);
 
-  const fetchNotes = () => {
-    const collectionRef = collection(
-      db,
-      "users",
-      auth.currentUser.uid,
-      "notes"
-    );
+  const fetchNotesList = () => {
+    const collectionRef = collection(db, "users", currentUser.uid, "notes");
     const q = query(collectionRef);
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      setNotes(querySnapshot.docs.map((doc) => [doc.id, doc.data()]));
+      setNotesList(querySnapshot.docs.map((doc) => [doc.id, doc.data()]));
     });
     return unsubscribe;
   };
 
   const fetchNote = async () => {
     try {
-      const docRef = doc(db, "users", auth.currentUser.uid, "notes", noteId);
+      const docRef = doc(db, "users", currentUser.uid, "notes", noteId);
       const docSnapshot = await getDoc(docRef);
       const noteData = docSnapshot.data();
       setTitle(noteData.title);
@@ -67,46 +62,44 @@ const Notes = () => {
     }
   };
 
-  const checkAuthState = async () => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUserEmail(user.email);
-      } else {
-        navigate("/");
-      }
-    });
-  };
-
-  const handleNoteDelete = async (e, id) => {
+  const deleteNote = async (e, id) => {
     e.stopPropagation();
     const prompt = window.confirm("정말로 삭제하시겠습니까?");
     if (!prompt) return;
 
     try {
-      const docRef = doc(db, "users", auth.currentUser.uid, "notes", id);
+      let docRef = doc(db, "users", currentUser.uid, "notes", id);
       await deleteDoc(docRef);
+
+      if (noteId === id) {
+        docRef = doc(db, "users", currentUser.uid);
+        await updateDoc(docRef, {
+          lastVisitedNoteId: "",
+        });
+        navigate("/notes");
+      }
     } catch (e) {
       console.log(e);
     }
   };
 
-  const handleNoteItemClick = async (id) => {
+  const handleNotesListItemClick = async (id) => {
     try {
-      const docRef = doc(db, "users", auth.currentUser.uid);
+      const docRef = doc(db, "users", currentUser.uid);
       await updateDoc(docRef, {
         lastVisitedNoteId: id,
       });
+      navigate(`/notes/${id}`);
     } catch (e) {
       console.log(e);
     }
-    navigate(`/notes/${id}`);
   };
 
   const fetchLastVisitedNote = async () => {
     try {
-      const docRef = doc(db, "users", auth.currentUser.uid);
-      const docSnap = await getDoc(docRef);
-      const { lastVisitedNoteId } = docSnap.data();
+      const docRef = doc(db, "users", currentUser.uid);
+      const docSnapshot = await getDoc(docRef);
+      const { lastVisitedNoteId } = docSnapshot.data();
 
       if (lastVisitedNoteId) navigate(`/notes/${lastVisitedNoteId}`);
     } catch (e) {
@@ -115,30 +108,33 @@ const Notes = () => {
   };
 
   const updateTitle = async () => {
-    const docRef = doc(db, "users", auth.currentUser.uid, "notes", noteId);
+    const docRef = doc(db, "users", currentUser.uid, "notes", noteId);
     await updateDoc(docRef, {
       title,
     });
   };
 
   const updateContent = async () => {
-    const docRef = doc(db, "users", auth.currentUser.uid, "notes", noteId);
+    const docRef = doc(db, "users", currentUser.uid, "notes", noteId);
     await updateDoc(docRef, {
       content,
     });
   };
 
-  useEffect(() => {
-    checkAuthState();
-    if (!noteId) fetchLastVisitedNote();
-  }, []);
+  const createNote = async () => {
+    const collectionRef = collection(db, "users", currentUser.uid, "notes");
+    const docRef = await addDoc(collectionRef, {
+      title: "",
+      content: "",
+    });
+    navigate(`/notes/${docRef.id}`);
+  };
 
   useEffect(() => {
-    if (userEmail) {
-      const unsubscribe = fetchNotes();
-      return unsubscribe;
-    }
-  }, [userEmail]);
+    fetchLastVisitedNote();
+    const unsubscribe = fetchNotesList();
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     fetchNote();
@@ -158,7 +154,7 @@ const Notes = () => {
         <div className="flex items-center justify-between max-w-screen-xl mx-auto">
           <div>recap</div>
           <div>
-            <span>{userEmail}</span>
+            <span>{currentUser.email}</span>
             <button
               onClick={() => {
                 const confirm = window.confirm("로그아웃 하시겠습니까?.");
@@ -179,23 +175,25 @@ const Notes = () => {
             <h1 className="text-xl font-bold">Notes</h1>
             <div
               className="p-2 hover:bg-slate-100 rounded-xl"
-              onClick={() => navigate("/notes")}>
+              onClick={createNote}>
               <FiPlusSquare />
             </div>
           </div>
-          {notes.map((note) => {
+          {notesList.map((note) => {
             const [id, data] = note;
             return (
               <div
                 key={id}
-                className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-300"
-                onClick={() => handleNoteItemClick(id)}>
+                className={`flex items-center justify-between p-4 cursor-pointer hover:bg-slate-300 ${
+                  id === noteId && "bg-slate-300"
+                }`}
+                onClick={() => handleNotesListItemClick(id)}>
                 <div className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">
                   {data.title ? data.title : "New note"}
                 </div>
                 <div
                   className="p-2 hover:bg-slate-100 rounded-xl"
-                  onClick={(e) => handleNoteDelete(e, id)}>
+                  onClick={(e) => deleteNote(e, id)}>
                   <FaRegTrashAlt />
                 </div>
               </div>
@@ -203,22 +201,25 @@ const Notes = () => {
           })}
         </aside>
         <main className="grow">
-          <div>
-            <input
-              type="text"
-              style={{ width: "100%", fontSize: "24px", fontWeight: 700 }}
-              placeholder="Title"
-              value={title}
-              onChange={handleTitleChange}
-            />
-            <ReactQuill
-              theme="snow"
-              className="w-full"
-              modules={modules}
-              onChange={handleContentChange}
-              value={content}
-            />
-          </div>
+          {noteId && (
+            <div>
+              <input
+                type="text"
+                style={{ width: "100%", fontSize: "24px", fontWeight: 700 }}
+                placeholder="New note"
+                value={title}
+                onChange={handleTitleChange}
+              />
+              <ReactQuill
+                theme="snow"
+                className="w-full"
+                placeholder="Start writing..."
+                modules={modules}
+                onChange={handleContentChange}
+                value={content}
+              />
+            </div>
+          )}
         </main>
       </div>
     </div>

@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Notes from "./pages/Notes";
+import MainLayout from "./layouts/MainLayout";
 
 function App() {
   return (
@@ -11,7 +12,9 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
 
-      <Route path="/notes/:noteId?" element={<Notes />} />
+      <Route element={<MainLayout />}>
+        <Route path="/notes/:noteId?" element={<Notes />} />
+      </Route>
     </Routes>
   );
 }
