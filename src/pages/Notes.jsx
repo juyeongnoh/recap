@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { auth, db } from "../firebase";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useParams } from "react-router-dom";
 import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   onSnapshot,
   query,
+  updateDoc,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { FaRegTrashAlt } from "react-icons/fa";
@@ -17,6 +19,8 @@ const Notes = () => {
 
   const [userEmail, setUserEmail] = useState(null);
   const [notes, setNotes] = useState([]);
+
+  const { noteId } = useParams();
 
   const fetchNotes = () => {
     const collectionRef = collection(
@@ -55,8 +59,33 @@ const Notes = () => {
     }
   };
 
+  const handleNoteItemClick = async (id) => {
+    try {
+      const docRef = doc(db, "users", auth.currentUser.uid);
+      await updateDoc(docRef, {
+        lastVisitedNoteId: id,
+      });
+    } catch (e) {
+      console.log(e);
+    }
+    navigate(`/notes/${id}`);
+  };
+
+  const fetchLastVisitedNote = async () => {
+    try {
+      const docRef = doc(db, "users", auth.currentUser.uid);
+      const docSnap = await getDoc(docRef);
+      const { lastVisitedNoteId } = docSnap.data();
+
+      if (lastVisitedNoteId) navigate(`/notes/${lastVisitedNoteId}`);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   useEffect(() => {
     checkAuthState();
+    if (!noteId) fetchLastVisitedNote();
   }, []);
 
   useEffect(() => {
@@ -75,6 +104,9 @@ const Notes = () => {
             <span>{userEmail}</span>
             <button
               onClick={() => {
+                const confirm = window.confirm("로그아웃 하시겠습니까?.");
+                if (!confirm) return;
+
                 auth.signOut();
                 navigate("/");
               }}
@@ -84,8 +116,8 @@ const Notes = () => {
           </div>
         </div>
       </div>
-      <div style={{ display: "flex", gap: "16px" }}>
-        <aside style={{ width: "200px" }}>
+      <div className="flex gap-4">
+        <aside className="w-64">
           <div className="flex items-center justify-between p-4">
             <h1 className="text-xl font-bold">Notes</h1>
             <div
@@ -100,9 +132,9 @@ const Notes = () => {
               <div
                 key={id}
                 className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-300"
-                onClick={() => navigate(`/notes/${id}`)}>
+                onClick={() => handleNoteItemClick(id)}>
                 <div className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">
-                  {data.title}
+                  {data.title ? data.title : "New note"}
                 </div>
                 <div
                   className="p-2 hover:bg-slate-100 rounded-xl"

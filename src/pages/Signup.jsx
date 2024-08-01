@@ -32,6 +32,7 @@ const Signup = () => {
       const docRef = doc(db, "users", auth.currentUser.uid);
       await setDoc(docRef, {
         email: auth.currentUser.email,
+        lastVisitedNoteId: "",
       });
 
       navigate("/login");

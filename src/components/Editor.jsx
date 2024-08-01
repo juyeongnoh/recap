@@ -32,7 +32,7 @@ const Editor = () => {
     if (!noteId) {
       const collectionRef = collection(db, "users", user.uid, "notes");
       const docRef = await addDoc(collectionRef, {
-        title: "Untitled",
+        title: "",
         content: "",
       });
       navigate(`/notes/${docRef.id}`);
