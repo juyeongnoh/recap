@@ -14,6 +14,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { FiPlusSquare } from "react-icons/fi";
 import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const Notes = () => {
   const navigate = useNavigate();
@@ -211,6 +212,7 @@ const Notes = () => {
               onChange={handleTitleChange}
             />
             <ReactQuill
+              theme="snow"
               className="w-full"
               modules={modules}
               onChange={handleContentChange}
