@@ -179,64 +179,66 @@ const Notes = () => {
           </div>
         </div>
       </div>
-      <div className="flex gap-4">
-        <aside className="w-64">
-          <div className="flex items-center justify-between p-4">
-            <h1 className="text-xl font-bold">Notes</h1>
-            <div
-              className="p-2 hover:bg-slate-100 rounded-xl"
-              onClick={createNote}>
-              <FiPlusSquare />
+      <div className="w-full">
+        <div className="flex max-w-screen-xl gap-4 mx-auto">
+          <aside className="w-64">
+            <div className="flex items-center justify-between p-4">
+              <h1 className="text-xl font-bold">Notes</h1>
+              <div
+                className="p-2 hover:bg-slate-100 rounded-xl"
+                onClick={createNote}>
+                <FiPlusSquare />
+              </div>
             </div>
-          </div>
-          {notesList.length ? (
-            notesList.map((note) => {
-              const [id, data] = note;
-              return (
-                <div
-                  key={id}
-                  className={`flex items-center justify-between p-4 cursor-pointer hover:bg-slate-300 ${
-                    id === noteId && "bg-slate-300"
-                  }`}
-                  onClick={() => handleNotesListItemClick(id)}>
-                  <div className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">
-                    {data.title ? data.title : "New note"}
-                  </div>
+            {notesList.length ? (
+              notesList.map((note) => {
+                const [id, data] = note;
+                return (
                   <div
-                    className="p-2 hover:bg-slate-100 rounded-xl"
-                    onClick={(e) => deleteNote(e, id)}>
-                    <FaRegTrashAlt />
+                    key={id}
+                    className={`flex items-center justify-between p-4 cursor-pointer hover:bg-slate-300 ${
+                      id === noteId && "bg-slate-300"
+                    }`}
+                    onClick={() => handleNotesListItemClick(id)}>
+                    <div className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">
+                      {data.title ? data.title : "New note"}
+                    </div>
+                    <div
+                      className="p-2 hover:bg-slate-100 rounded-xl"
+                      onClick={(e) => deleteNote(e, id)}>
+                      <FaRegTrashAlt />
+                    </div>
                   </div>
-                </div>
-              );
-            })
-          ) : (
-            <div>Start writing!</div>
-          )}
-        </aside>
-        <main className="grow">
-          {noteId ? (
-            <div>
-              <input
-                type="text"
-                style={{ width: "100%", fontSize: "24px", fontWeight: 700 }}
-                placeholder="New note"
-                value={title}
-                onChange={handleTitleChange}
-              />
-              <ReactQuill
-                theme="snow"
-                className="w-full"
-                placeholder="Start writing..."
-                modules={modules}
-                onChange={handleContentChange}
-                value={content}
-              />
-            </div>
-          ) : (
-            <div>Select a note!</div>
-          )}
-        </main>
+                );
+              })
+            ) : (
+              <div>Start writing!</div>
+            )}
+          </aside>
+          <main className="grow">
+            {noteId ? (
+              <div>
+                <input
+                  type="text"
+                  style={{ width: "100%", fontSize: "24px", fontWeight: 700 }}
+                  placeholder="New note"
+                  value={title}
+                  onChange={handleTitleChange}
+                />
+                <ReactQuill
+                  theme="snow"
+                  className="w-full"
+                  placeholder="Start writing..."
+                  modules={modules}
+                  onChange={handleContentChange}
+                  value={content}
+                />
+              </div>
+            ) : (
+              <div>Select a note!</div>
+            )}
+          </main>
+        </div>
       </div>
     </div>
   );
