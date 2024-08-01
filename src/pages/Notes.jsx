@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { auth, db } from "../firebase";
-import { Outlet, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   collection,
   deleteDoc,
@@ -13,14 +13,31 @@ import {
 import { onAuthStateChanged } from "firebase/auth";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { FiPlusSquare } from "react-icons/fi";
+import ReactQuill from "react-quill";
 
 const Notes = () => {
   const navigate = useNavigate();
 
   const [userEmail, setUserEmail] = useState(null);
   const [notes, setNotes] = useState([]);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   const { noteId } = useParams();
+
+  const modules = {
+    toolbar: {
+      container: [
+        ["image"],
+        [{ header: [1, 2, 3, false] }],
+        ["bold", "underline"],
+      ],
+    },
+  };
+
+  const handleTitleChange = (e) => setTitle(e.target.value);
+  const handleContentChange = (value) => setContent(value);
 
   const fetchNotes = () => {
     const collectionRef = collection(
@@ -34,6 +51,19 @@ const Notes = () => {
       setNotes(querySnapshot.docs.map((doc) => [doc.id, doc.data()]));
     });
     return unsubscribe;
+  };
+
+  const fetchNote = async () => {
+    try {
+      const docRef = doc(db, "users", auth.currentUser.uid, "notes", noteId);
+      const docSnapshot = await getDoc(docRef);
+      const noteData = docSnapshot.data();
+      setTitle(noteData.title);
+      setContent(noteData.content);
+      setIsLoading(false);
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const checkAuthState = async () => {
@@ -83,6 +113,20 @@ const Notes = () => {
     }
   };
 
+  const updateTitle = async () => {
+    const docRef = doc(db, "users", auth.currentUser.uid, "notes", noteId);
+    await updateDoc(docRef, {
+      title,
+    });
+  };
+
+  const updateContent = async () => {
+    const docRef = doc(db, "users", auth.currentUser.uid, "notes", noteId);
+    await updateDoc(docRef, {
+      content,
+    });
+  };
+
   useEffect(() => {
     checkAuthState();
     if (!noteId) fetchLastVisitedNote();
@@ -94,6 +138,18 @@ const Notes = () => {
       return unsubscribe;
     }
   }, [userEmail]);
+
+  useEffect(() => {
+    fetchNote();
+  }, [noteId]);
+
+  useEffect(() => {
+    if (!isLoading) updateTitle();
+  }, [title]);
+
+  useEffect(() => {
+    if (!isLoading) updateContent();
+  }, [content]);
 
   return (
     <div>
@@ -145,8 +201,22 @@ const Notes = () => {
             );
           })}
         </aside>
-        <main style={{ flexGrow: 1 }}>
-          <Outlet />
+        <main className="grow">
+          <div>
+            <input
+              type="text"
+              style={{ width: "100%", fontSize: "24px", fontWeight: 700 }}
+              placeholder="Title"
+              value={title}
+              onChange={handleTitleChange}
+            />
+            <ReactQuill
+              className="w-full"
+              modules={modules}
+              onChange={handleContentChange}
+              value={content}
+            />
+          </div>
         </main>
       </div>
     </div>
