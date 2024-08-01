@@ -4,9 +4,24 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Notes from "./pages/Notes";
 import MainLayout from "./layouts/MainLayout";
+import { useEffect, useState } from "react";
+import { auth } from "./firebase";
 
 function App() {
-  return (
+  const [loading, setLoading] = useState(true);
+
+  const checkAuth = async () => {
+    await auth.authStateReady();
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  return loading ? (
+    <div>Loading...</div>
+  ) : (
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />

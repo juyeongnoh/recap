@@ -29,9 +29,6 @@ const Login = () => {
       );
       console.log(user);
 
-      // localStorage.setItem("access", user.user.accessToken);
-      // localStorage.setItem("refresh", user.user.refreshToken);
-
       navigate("/");
     } catch (error) {
       console.error(error);

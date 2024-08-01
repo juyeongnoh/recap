@@ -6,15 +6,10 @@ const MainLayout = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
-  const checkAuth = async () => {
-    await auth.authStateReady();
-    const { currentUser } = auth;
-    if (!currentUser) navigate("/login");
-    setLoading(false);
-  };
-
   useEffect(() => {
-    checkAuth();
+    const { currentUser } = auth;
+    if (!currentUser) navigate("/");
+    setLoading(false);
   }, []);
 
   return loading ? <div>Loading...</div> : <Outlet />;

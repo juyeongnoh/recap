@@ -1,8 +1,14 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { auth } from "../firebase";
 
 const Home = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const { currentUser } = auth;
+    if (currentUser) navigate("/notes");
+  }, []);
 
   return (
     <div>

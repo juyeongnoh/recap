@@ -9,6 +9,7 @@ import {
   getDoc,
   onSnapshot,
   query,
+  serverTimestamp,
   updateDoc,
 } from "firebase/firestore";
 import { FaRegTrashAlt } from "react-icons/fa";
@@ -51,6 +52,7 @@ const Notes = () => {
 
   const fetchNote = async () => {
     try {
+      if (!noteId) return;
       const docRef = doc(db, "users", currentUser.uid, "notes", noteId);
       const docSnapshot = await getDoc(docRef);
       const noteData = docSnapshot.data();
@@ -111,6 +113,7 @@ const Notes = () => {
     const docRef = doc(db, "users", currentUser.uid, "notes", noteId);
     await updateDoc(docRef, {
       title,
+      modifiedAt: serverTimestamp(),
     });
   };
 
@@ -118,6 +121,7 @@ const Notes = () => {
     const docRef = doc(db, "users", currentUser.uid, "notes", noteId);
     await updateDoc(docRef, {
       content,
+      modifiedAt: serverTimestamp(),
     });
   };
 
@@ -126,6 +130,8 @@ const Notes = () => {
     const docRef = await addDoc(collectionRef, {
       title: "",
       content: "",
+      createdAt: serverTimestamp(),
+      modifiedAt: serverTimestamp(),
     });
     navigate(`/notes/${docRef.id}`);
   };
@@ -156,15 +162,19 @@ const Notes = () => {
           <div>
             <span>{currentUser.email}</span>
             <button
-              onClick={() => {
-                const confirm = window.confirm("로그아웃 하시겠습니까?.");
+              onClick={async () => {
+                const confirm = window.confirm("로그아웃 하시겠습니까?");
                 if (!confirm) return;
 
-                auth.signOut();
-                navigate("/");
+                try {
+                  await auth.signOut(); // 로그아웃 후 navigate 호출
+                  navigate("/");
+                } catch (error) {
+                  console.error("Error signing out: ", error);
+                }
               }}
-              className="p-4 rounded-2xl bg-slate-200">
-              로그아웃
+              className="p-2 rounded-2xl bg-slate-200">
+              Logout
             </button>
           </div>
         </div>
@@ -179,29 +189,33 @@ const Notes = () => {
               <FiPlusSquare />
             </div>
           </div>
-          {notesList.map((note) => {
-            const [id, data] = note;
-            return (
-              <div
-                key={id}
-                className={`flex items-center justify-between p-4 cursor-pointer hover:bg-slate-300 ${
-                  id === noteId && "bg-slate-300"
-                }`}
-                onClick={() => handleNotesListItemClick(id)}>
-                <div className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">
-                  {data.title ? data.title : "New note"}
-                </div>
+          {notesList.length ? (
+            notesList.map((note) => {
+              const [id, data] = note;
+              return (
                 <div
-                  className="p-2 hover:bg-slate-100 rounded-xl"
-                  onClick={(e) => deleteNote(e, id)}>
-                  <FaRegTrashAlt />
+                  key={id}
+                  className={`flex items-center justify-between p-4 cursor-pointer hover:bg-slate-300 ${
+                    id === noteId && "bg-slate-300"
+                  }`}
+                  onClick={() => handleNotesListItemClick(id)}>
+                  <div className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">
+                    {data.title ? data.title : "New note"}
+                  </div>
+                  <div
+                    className="p-2 hover:bg-slate-100 rounded-xl"
+                    onClick={(e) => deleteNote(e, id)}>
+                    <FaRegTrashAlt />
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          ) : (
+            <div>Start writing!</div>
+          )}
         </aside>
         <main className="grow">
-          {noteId && (
+          {noteId ? (
             <div>
               <input
                 type="text"
@@ -219,6 +233,8 @@ const Notes = () => {
                 value={content}
               />
             </div>
+          ) : (
+            <div>Select a note!</div>
           )}
         </main>
       </div>
