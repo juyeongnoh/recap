@@ -12,9 +12,20 @@ const Home = () => {
 
   return (
     <div>
-      <div>Home</div>
-      <button onClick={() => navigate("/login")}>Login</button>
-      <button onClick={() => navigate("/signup")}>Signup</button>
+      <div className="grid gap-4 p-12 mx-auto w-96">
+        <h1 className="text-xl font-bold">Home</h1>
+
+        <button
+          className="p-2 bg-slate-200 hover:bg-slate-300"
+          onClick={() => navigate("/login")}>
+          Login
+        </button>
+        <button
+          className="p-2 bg-slate-200 hover:bg-slate-300"
+          onClick={() => navigate("/signup")}>
+          Signup
+        </button>
+      </div>
     </div>
   );
 };

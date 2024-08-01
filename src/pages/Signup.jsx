@@ -6,6 +6,7 @@ import { doc, setDoc } from "firebase/firestore";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const [error, setError] = useState(null);
 
   const [loginCredentials, setLoginCredentials] = useState({
     email: "",
@@ -37,38 +38,55 @@ const Signup = () => {
 
       navigate("/login");
     } catch (error) {
-      console.error(error);
+      setError(error.message);
     }
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <label>Email</label>
-        <input
-          type="email"
-          name="email"
-          className="border border-gray-400"
-          value={loginCredentials.email}
-          onChange={handleChange}
-        />
-        <br />
+    <div className="w-screen h-screen">
+      <div className="grid gap-4 p-12 mx-auto w-96">
+        <h1 className="text-xl font-bold">Signup</h1>
+        <form className="grid gap-4" onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-2">
+            <label>Email</label>
+            <input
+              className="p-2 border border-slate-400 rounded-xl"
+              type="email"
+              name="email"
+              value={loginCredentials.email}
+              onChange={handleChange}
+            />
+          </div>
 
-        <label>Password</label>
-        <input
-          type="password"
-          name="password"
-          className="border border-gray-400"
-          value={loginCredentials.password}
-          onChange={handleChange}
-        />
-        <br />
+          <div className="flex flex-col gap-2">
+            <label>Password</label>
+            <input
+              className="p-2 border border-slate-400 rounded-xl"
+              type="password"
+              name="password"
+              value={loginCredentials.password}
+              onChange={handleChange}
+            />
+          </div>
 
-        <input type="submit" />
-      </form>
+          <button className="p-2 bg-slate-200 hover:bg-slate-300" type="submit">
+            Signup
+          </button>
+        </form>
 
-      <button onClick={() => navigate("/")}>Home</button>
-      <button onClick={() => navigate("/login")}>Login</button>
+        {error && <div className="text-red-500">{error}</div>}
+
+        <button
+          className="p-2 bg-slate-200 hover:bg-slate-300"
+          onClick={() => navigate("/")}>
+          Home
+        </button>
+        <button
+          className="p-2 bg-slate-200 hover:bg-slate-300"
+          onClick={() => navigate("/login")}>
+          Login
+        </button>
+      </div>
     </div>
   );
 };
