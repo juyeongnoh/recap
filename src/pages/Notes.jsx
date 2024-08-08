@@ -15,6 +15,7 @@ import { FaRegTrashAlt } from "react-icons/fa";
 import { FiPlusSquare } from "react-icons/fi";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import AISidebar from "../components/AISidebar";
 
 const Notes = () => {
   const navigate = useNavigate();
@@ -23,6 +24,8 @@ const Notes = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+
+  const [isAISidebarOpen, setIsAISidebarOpen] = useState(false);
 
   const { noteId } = useParams();
   const { currentUser } = auth;
@@ -243,13 +246,23 @@ const Notes = () => {
             <main className="grow">
               {noteId ? (
                 <div>
-                  <input
-                    type="text"
-                    style={{ width: "100%", fontSize: "24px", fontWeight: 700 }}
-                    placeholder="New note"
-                    value={title}
-                    onChange={handleTitleChange}
-                  />
+                  <div className="flex">
+                    <input
+                      type="text"
+                      style={{
+                        width: "100%",
+                        fontSize: "24px",
+                        fontWeight: 700,
+                      }}
+                      placeholder="New note"
+                      value={title}
+                      onChange={handleTitleChange}
+                    />
+                    <button
+                      onClick={() => setIsAISidebarOpen(!isAISidebarOpen)}>
+                      {isAISidebarOpen ? "Close Sidebar" : "Open Sidebar"}
+                    </button>
+                  </div>
                   <ReactQuill
                     theme="snow"
                     className="w-full"
@@ -264,6 +277,8 @@ const Notes = () => {
               )}
             </main>
           )}
+
+          {isAISidebarOpen && <AISidebar />}
         </div>
       </div>
     </div>
