@@ -25,6 +25,9 @@ dist-ssr
 
 .env
 
+# Firebase
 /functions
 .firebaserc
 firebase.json
+firestore.indexes.json
+firestore.rules

@@ -7,8 +7,7 @@ import {
   deleteDoc,
   doc,
   getDoc,
-  onSnapshot,
-  query,
+  getDocs,
   serverTimestamp,
   updateDoc,
 } from "firebase/firestore";
@@ -41,16 +40,15 @@ const Notes = () => {
   const handleTitleChange = (e) => setTitle(e.target.value);
   const handleContentChange = (value) => setContent(value);
 
-  const fetchNotesList = () => {
+  const fetchNotesList = async () => {
     const collectionRef = collection(db, "users", currentUser.uid, "notes");
-    const q = query(collectionRef);
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      setNotesList(querySnapshot.docs.map((doc) => [doc.id, doc.data()]));
-    });
-    return unsubscribe;
+    const querySnapshot = await getDocs(collectionRef);
+    const notesList = querySnapshot.docs.map((doc) => [doc.id, doc.data()]);
+    setNotesList(notesList);
   };
 
   const fetchNote = async () => {
+    setIsLoading(true);
     try {
       if (!noteId) return;
       const docRef = doc(db, "users", currentUser.uid, "notes", noteId);
@@ -86,7 +84,12 @@ const Notes = () => {
   };
 
   const handleNotesListItemClick = async (id) => {
+    if (noteId === id) return;
+
     try {
+      // 페이지 이동 전에 현재 노트 저장
+      if (noteId) updateNote();
+
       const docRef = doc(db, "users", currentUser.uid);
       await updateDoc(docRef, {
         lastVisitedNoteId: id,
@@ -109,17 +112,10 @@ const Notes = () => {
     }
   };
 
-  const updateTitle = async () => {
+  const updateNote = async () => {
     const docRef = doc(db, "users", currentUser.uid, "notes", noteId);
     await updateDoc(docRef, {
       title,
-      modifiedAt: serverTimestamp(),
-    });
-  };
-
-  const updateContent = async () => {
-    const docRef = doc(db, "users", currentUser.uid, "notes", noteId);
-    await updateDoc(docRef, {
       content,
       modifiedAt: serverTimestamp(),
     });
@@ -138,21 +134,35 @@ const Notes = () => {
 
   useEffect(() => {
     fetchLastVisitedNote();
-    const unsubscribe = fetchNotesList();
-    return unsubscribe;
+    fetchNotesList();
   }, []);
 
   useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
+  useEffect(() => {
+    fetchNotesList();
     fetchNote();
   }, [noteId]);
 
   useEffect(() => {
-    if (!isLoading) updateTitle();
+    setNotesList((prev) => {
+      const updatedNotesList = prev.map((note) => {
+        if (note[0] === noteId) {
+          return [noteId, { ...note[1], title }];
+        }
+        return note;
+      });
+      return updatedNotesList;
+    });
   }, [title]);
-
-  useEffect(() => {
-    if (!isLoading) updateContent();
-  }, [content]);
 
   return (
     <div>
@@ -214,30 +224,46 @@ const Notes = () => {
             ) : (
               <div>Start writing!</div>
             )}
+            <button
+              onClick={async () => {
+                try {
+                  const response = await fetch(
+                    "http://127.0.0.1:5001/recap-3db0e/us-central1/addMessage?text=hello"
+                  );
+                } catch (e) {
+                  console.log(e);
+                }
+              }}>
+              addMessage
+            </button>
           </aside>
-          <main className="grow">
-            {noteId ? (
-              <div>
-                <input
-                  type="text"
-                  style={{ width: "100%", fontSize: "24px", fontWeight: 700 }}
-                  placeholder="New note"
-                  value={title}
-                  onChange={handleTitleChange}
-                />
-                <ReactQuill
-                  theme="snow"
-                  className="w-full"
-                  placeholder="Start writing..."
-                  modules={modules}
-                  onChange={handleContentChange}
-                  value={content}
-                />
-              </div>
-            ) : (
-              <div>Select a note!</div>
-            )}
-          </main>
+          {isLoading ? (
+            <div>Loading...</div>
+          ) : (
+            <main className="grow">
+              {noteId ? (
+                <div>
+                  <input
+                    type="text"
+                    style={{ width: "100%", fontSize: "24px", fontWeight: 700 }}
+                    placeholder="New note"
+                    value={title}
+                    onChange={handleTitleChange}
+                  />
+                  <ReactQuill
+                    theme="snow"
+                    className="w-full"
+                    placeholder="Start writing..."
+                    modules={modules}
+                    onChange={handleContentChange}
+                    value={content}
+                  />
+                </div>
+              ) : (
+                <div>Select a note!</div>
+              )}
+            </main>
+          )}
         </div>
       </div>
     </div>
