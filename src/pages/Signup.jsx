@@ -1,8 +1,7 @@
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
-import { auth, db } from "../firebase";
+import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
-import { doc, setDoc } from "firebase/firestore";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -30,13 +29,7 @@ const Signup = () => {
         loginCredentials.password
       );
 
-      const docRef = doc(db, "users", auth.currentUser.uid);
-      await setDoc(docRef, {
-        email: auth.currentUser.email,
-        lastVisitedNoteId: "",
-      });
-
-      navigate("/login");
+      navigate("/notes");
     } catch (error) {
       setError(error.message);
     }

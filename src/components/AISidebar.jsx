@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
+import KeyTerms from "./KeyTerms";
+import Chatbot from "./Chatbot";
+import KeyConcepts from "./KeyConcepts";
 
 const AISidebar = () => {
-  const [currentTab, setCurrentTab] = useState("Terms");
+  const [currentTab, setCurrentTab] = useState("Key Terms");
 
   useEffect(() => {
     console.log("AISidebar mounted");
@@ -10,13 +13,13 @@ const AISidebar = () => {
   }, []);
 
   return (
-    <aside className="w-64 p-4">
+    <aside className="p-4 w-72">
       <div className="flex justify-between">
         <button
           className="p-2 text-sm rounded-lg bg-slate-300 hover:bg-slate-200"
-          value="Terms"
+          value="Key Terms"
           onClick={(e) => setCurrentTab(e.target.value)}>
-          Terms
+          Key Terms
         </button>
         <button
           className="p-2 text-sm rounded-lg bg-slate-300 hover:bg-slate-200"
@@ -31,6 +34,9 @@ const AISidebar = () => {
           Chatbot
         </button>
       </div>
+      {currentTab === "Key Terms" && <KeyTerms />}
+      {currentTab === "Key Concepts" && <KeyConcepts />}
+      {currentTab === "Chatbot" && <Chatbot />}
     </aside>
   );
 };

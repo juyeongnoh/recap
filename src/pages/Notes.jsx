@@ -8,8 +8,10 @@ import {
   doc,
   getDoc,
   getDocs,
+  query,
   serverTimestamp,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { FiPlusSquare } from "react-icons/fi";
@@ -44,17 +46,26 @@ const Notes = () => {
   const handleContentChange = (value) => setContent(value);
 
   const fetchNotesList = async () => {
-    const collectionRef = collection(db, "users", currentUser.uid, "notes");
-    const querySnapshot = await getDocs(collectionRef);
-    const notesList = querySnapshot.docs.map((doc) => [doc.id, doc.data()]);
-    setNotesList(notesList);
+    setIsLoading(true);
+    try {
+      const q = query(
+        collection(db, "notes"),
+        where("uid", "==", currentUser.uid)
+      );
+      const querySnapshot = await getDocs(q);
+      const notesList = querySnapshot.docs.map((doc) => [doc.id, doc.data()]);
+      setNotesList(notesList);
+      setIsLoading(false);
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const fetchNote = async () => {
     setIsLoading(true);
     try {
       if (!noteId) return;
-      const docRef = doc(db, "users", currentUser.uid, "notes", noteId);
+      const docRef = doc(db, "notes", noteId);
       const docSnapshot = await getDoc(docRef);
       const noteData = docSnapshot.data();
       setTitle(noteData.title);
@@ -71,11 +82,11 @@ const Notes = () => {
     if (!prompt) return;
 
     try {
-      let docRef = doc(db, "users", currentUser.uid, "notes", id);
+      let docRef = doc(db, "notes", id);
       await deleteDoc(docRef);
 
       if (noteId === id) {
-        docRef = doc(db, "users", currentUser.uid);
+        const docRef = doc(db, "users", currentUser.uid);
         await updateDoc(docRef, {
           lastVisitedNoteId: "",
         });
@@ -116,7 +127,7 @@ const Notes = () => {
   };
 
   const updateNote = async () => {
-    const docRef = doc(db, "users", currentUser.uid, "notes", noteId);
+    const docRef = doc(db, "notes", noteId);
     await updateDoc(docRef, {
       title,
       content,
@@ -125,8 +136,11 @@ const Notes = () => {
   };
 
   const createNote = async () => {
-    const collectionRef = collection(db, "users", currentUser.uid, "notes");
+    if (noteId) updateNote();
+
+    const collectionRef = collection(db, "notes");
     const docRef = await addDoc(collectionRef, {
+      uid: currentUser.uid,
       title: "",
       content: "",
       createdAt: serverTimestamp(),
@@ -192,9 +206,9 @@ const Notes = () => {
           </div>
         </div>
       </div>
-      <div className="w-full">
+      <div>
         <div className="flex max-w-screen-xl gap-4 mx-auto">
-          <aside className="w-64">
+          <aside className="w-72">
             <div className="flex items-center justify-between p-4">
               <h1 className="text-xl font-bold">Notes</h1>
               <div
@@ -203,7 +217,9 @@ const Notes = () => {
                 <FiPlusSquare />
               </div>
             </div>
-            {notesList.length ? (
+            {isLoading ? (
+              <div>Loading...</div>
+            ) : notesList.length ? (
               notesList.map((note) => {
                 const [id, data] = note;
                 return (
@@ -227,18 +243,6 @@ const Notes = () => {
             ) : (
               <div>Start writing!</div>
             )}
-            <button
-              onClick={async () => {
-                try {
-                  const response = await fetch(
-                    "http://127.0.0.1:5001/recap-3db0e/us-central1/addMessage?text=hello"
-                  );
-                } catch (e) {
-                  console.log(e);
-                }
-              }}>
-              addMessage
-            </button>
           </aside>
           {isLoading ? (
             <div>Loading...</div>
@@ -259,6 +263,12 @@ const Notes = () => {
                       onChange={handleTitleChange}
                     />
                     <button
+                      className="p-2 ml-4 bg-slate-200 rounded-xl"
+                      onClick={updateNote}>
+                      Save
+                    </button>
+                    <button
+                      className="p-2 ml-4 bg-slate-200 rounded-xl"
                       onClick={() => setIsAISidebarOpen(!isAISidebarOpen)}>
                       {isAISidebarOpen ? "Close Sidebar" : "Open Sidebar"}
                     </button>
