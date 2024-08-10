@@ -10,7 +10,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { db } from "../firebase";
-import { FaRegTrashAlt } from "react-icons/fa";
+import { FaAngleLeft, FaArrowUp, FaRegTrashAlt } from "react-icons/fa";
 
 const Chatbot = () => {
   const { noteId } = useParams();
@@ -24,6 +24,13 @@ const Chatbot = () => {
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
   };
+
+  function convertTimestampToAmericanDateTime(timestamp) {
+    const date = new Date(timestamp * 1000);
+    const dateString = date.toLocaleString("en-US");
+
+    return dateString;
+  }
 
   const fetchChatRoomsList = () => {
     const collectionRef = collection(db, "notes", noteId, "chatbot");
@@ -100,19 +107,23 @@ const Chatbot = () => {
   }, [noteId]);
 
   return (
-    <div>
-      <h1>Chatbot</h1>
+    <div className="h-full">
       {documentId ? (
-        <>
-          <button
-            onClick={() => setDocumentId("")}
-            className="bg-slate-200 hover:bg-slate-100">
-            {"<-"}
-          </button>
-          <div>
-            <h2 className="text-lg font-semibold">{title}</h2>
-            <div className="p-4 mb-4 text-xs bg-gray-200 rounded-xl">
-              💡 챗봇이 노트의 내용을 바탕으로 답변합니다.
+        <div className="flex flex-col h-full">
+          <div className="flex items-center mb-4">
+            <button
+              onClick={() => setDocumentId("")}
+              className="p-2 mr-2 hover:bg-blue-100 rounded-xl">
+              <FaAngleLeft />
+            </button>
+            <h2 className="text-lg font-semibold">
+              {title ? title : "A new chat"}
+            </h2>
+          </div>
+
+          <div className="overflow-scroll grow">
+            <div className="p-4 mb-4 text-xs text-center bg-gray-200 rounded-xl">
+              💡 The chatbot provides answers based on the content of the note.
             </div>
             <div className="grid gap-2">
               <div>
@@ -128,56 +139,73 @@ const Chatbot = () => {
                       className={`p-2 rounded-xl w-3/4 ${
                         message.sender === "user" ? "bg-gray-100" : "bg-sky-100"
                       }`}>
-                      <small>{message.sender}</small>
-                      <p>{message.message}</p>
+                      <div className="text-sm font-bold">
+                        {message.sender === "user" ? "You" : "Chatbot"}
+                      </div>
+                      <p className="text-sm">{message.message}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
           </div>
-          <input
-            placeholder="text..."
-            type="text"
-            value={inputValue}
-            onChange={handleInputChange}
-          />
-          <button
-            onClick={() =>
-              sendMessage({
-                message: inputValue,
-                sender: "user",
-              })
-            }>
-            send
-          </button>
-        </>
+
+          <form className="flex gap-2">
+            <input
+              placeholder="Message the chatbot"
+              className="w-full p-2 border border-slate-300 rounded-xl"
+              type="text"
+              value={inputValue}
+              onChange={handleInputChange}
+            />
+            <button
+              type="submit"
+              className="p-2 hover:bg-blue-100 rounded-xl"
+              onClick={(e) => {
+                e.preventDefault();
+                sendMessage({
+                  message: inputValue,
+                  sender: "user",
+                });
+              }}>
+              <FaArrowUp />
+            </button>
+          </form>
+        </div>
       ) : (
-        <>
-          <button
-            onClick={createChatRoom}
-            className="bg-slate-200 hover:bg-slate-100">
-            new chat
-          </button>
+        <div className="flex flex-col gap-2">
           <div>
+            <button
+              onClick={createChatRoom}
+              className="w-full p-4 font-bold text-white bg-blue-500 hover:bg-blue-400 rounded-xl">
+              + New chat
+            </button>
+          </div>
+          <div className="flex flex-col gap-2 overflow-scroll grow">
             {chatRoomsList.map((chatRoom) => (
               <div
                 key={chatRoom.id}
-                className="mb-4 hover:bg-slate-100"
+                className="p-2 rounded-xl hover:bg-blue-100"
                 onClick={() => setDocumentId(chatRoom.id)}>
-                <div
-                  className="p-2 hover:bg-slate-200 rounded-xl"
-                  onClick={(e) => deleteChatRoom(e, chatRoom.id)}>
-                  <FaRegTrashAlt />
+                <div className="flex items-center">
+                  <h2 className="text-lg font-semibold grow">
+                    {chatRoom.title ? chatRoom.title : "A new chat"}
+                  </h2>
+                  <div
+                    className="p-2 hover:bg-slate-100 rounded-xl"
+                    onClick={(e) => deleteChatRoom(e, chatRoom.id)}>
+                    <FaRegTrashAlt />
+                  </div>
                 </div>
-                <h2 className="text-lg font-semibold">
-                  {chatRoom.title ? chatRoom.title : "a new chat"}
-                </h2>
-                <p>{chatRoom.modifiedAt?.seconds}</p>
+                <p>
+                  {convertTimestampToAmericanDateTime(
+                    chatRoom.modifiedAt?.seconds
+                  )}
+                </p>
               </div>
             ))}
           </div>
-        </>
+        </div>
       )}
     </div>
   );

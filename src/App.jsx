@@ -7,6 +7,7 @@ import MainLayout from "./layouts/MainLayout";
 import { useEffect, useState } from "react";
 import { auth } from "./firebase";
 import Recap from "./pages/Recap";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -23,16 +24,19 @@ function App() {
   return loading ? (
     <div>Loading...</div>
   ) : (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
+    <div>
+      <Toaster position="bottom-center" />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
 
-      <Route element={<MainLayout />}>
-        <Route path="/notes/:noteId?" element={<Notes />} />
-        <Route path="/recap/:noteId?/:recapId?" element={<Recap />} />
-      </Route>
-    </Routes>
+        <Route element={<MainLayout />}>
+          <Route path="/notes/:noteId?" element={<Notes />} />
+          <Route path="/recap/:noteId?/:recapId?" element={<Recap />} />
+        </Route>
+      </Routes>
+    </div>
   );
 }
 

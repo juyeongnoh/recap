@@ -2,41 +2,57 @@ import React, { useEffect, useState } from "react";
 import KeyTerms from "./KeyTerms";
 import Chatbot from "./Chatbot";
 import KeyConcepts from "./KeyConcepts";
+import { FaRegFileWord, FaRobot, FaSearch } from "react-icons/fa";
 
 const AISidebar = () => {
   const [currentTab, setCurrentTab] = useState("Key Terms");
 
   useEffect(() => {
-    console.log("AISidebar mounted");
-
-    return () => console.log("AISidebar unmounted");
-  }, []);
+    console.log("Current tab is", currentTab);
+  }, [currentTab]);
 
   return (
-    <aside className="p-4 w-72">
-      <div className="flex justify-between">
+    <aside className="flex flex-col border-l w-72 border-l-slate-200 shrink-0">
+      <div className="flex justify-between border-b border-b-slate-200">
         <button
-          className="p-2 text-sm rounded-lg bg-slate-300 hover:bg-slate-200"
-          value="Key Terms"
-          onClick={(e) => setCurrentTab(e.target.value)}>
-          Key Terms
+          className={`w-full p-2 hover:bg-blue-100 ${
+            currentTab === "Key Terms" && "bg-blue-300"
+          }`}
+          onClick={() => setCurrentTab("Key Terms")}>
+          <div className="flex flex-col items-center gap-2">
+            <FaRegFileWord className="text-2xl" />
+            <div className="text-xs">Key Terms</div>
+          </div>
         </button>
+
         <button
-          className="p-2 text-sm rounded-lg bg-slate-300 hover:bg-slate-200"
-          value="Key Concepts"
-          onClick={(e) => setCurrentTab(e.target.value)}>
-          Key Concepts
+          className={`w-full p-2 hover:bg-blue-100 ${
+            currentTab === "Key Concepts" && "bg-blue-300"
+          }`}
+          onClick={() => setCurrentTab("Key Concepts")}>
+          <div className="flex flex-col items-center gap-2">
+            <FaSearch className="text-2xl" />
+            <div className="text-xs">Key Concepts</div>
+          </div>
         </button>
+
         <button
-          className="p-2 text-sm rounded-lg bg-slate-300 hover:bg-slate-200"
-          value="Chatbot"
-          onClick={(e) => setCurrentTab(e.target.value)}>
-          Chatbot
+          className={`w-full p-2 hover:bg-blue-100 ${
+            currentTab === "Chatbot" && "bg-blue-300"
+          }`}
+          onClick={() => setCurrentTab("Chatbot")}>
+          <div className="flex flex-col items-center gap-2">
+            <FaRobot className="text-2xl" />
+            <div className="text-xs">Chatbot</div>
+          </div>
         </button>
       </div>
-      {currentTab === "Key Terms" && <KeyTerms />}
-      {currentTab === "Key Concepts" && <KeyConcepts />}
-      {currentTab === "Chatbot" && <Chatbot />}
+
+      <div className="p-2 overflow-scroll grow">
+        {currentTab === "Key Terms" && <KeyTerms />}
+        {currentTab === "Key Concepts" && <KeyConcepts />}
+        {currentTab === "Chatbot" && <Chatbot />}
+      </div>
     </aside>
   );
 };

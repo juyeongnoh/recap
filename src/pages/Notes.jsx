@@ -7,25 +7,33 @@ import {
   deleteDoc,
   doc,
   getDoc,
-  getDocs,
+  onSnapshot,
   query,
   serverTimestamp,
   updateDoc,
   where,
 } from "firebase/firestore";
-import { FaRegTrashAlt } from "react-icons/fa";
+import {
+  FaAngleDoubleLeft,
+  FaAngleDoubleRight,
+  FaRegSave,
+  FaRegTrashAlt,
+} from "react-icons/fa";
 import { FiPlusSquare } from "react-icons/fi";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import AISidebar from "../components/AISidebar";
+import { PulseLoader } from "react-spinners";
+import toast from "react-hot-toast";
 
 const Notes = () => {
   const navigate = useNavigate();
 
-  const [notesList, setNotesList] = useState([]);
+  const [noteList, setNoteList] = useState([]);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingNote, setIsLoadingNote] = useState(true);
+  const [isLoadingList, setIsLoadingList] = useState(true);
 
   const [isAISidebarOpen, setIsAISidebarOpen] = useState(false);
 
@@ -33,36 +41,43 @@ const Notes = () => {
   const { currentUser } = auth;
 
   const modules = {
-    toolbar: {
-      container: [
-        ["image"],
-        [{ header: [1, 2, 3, false] }],
-        ["bold", "underline"],
-      ],
-    },
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      ["bold", "italic", "underline", "strike"], // toggled buttons
+      ["blockquote", "code-block"],
+
+      [{ list: "ordered" }, { list: "bullet" }, { list: "check" }],
+      [{ script: "sub" }, { script: "super" }], // superscript/subscript
+      [{ indent: "-1" }, { indent: "+1" }], // outdent/indent
+
+      [{ color: [] }, { background: [] }], // dropdown with defaults from theme
+
+      [{ align: [] }],
+    ],
   };
 
   const handleTitleChange = (e) => setTitle(e.target.value);
   const handleContentChange = (value) => setContent(value);
 
-  const fetchNotesList = async () => {
-    setIsLoading(true);
-    try {
-      const q = query(
-        collection(db, "notes"),
-        where("uid", "==", currentUser.uid)
-      );
-      const querySnapshot = await getDocs(q);
+  const fetchNotesList = () => {
+    setIsLoadingList(true);
+
+    const q = query(
+      collection(db, "notes"),
+      where("uid", "==", currentUser.uid)
+    );
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const notesList = querySnapshot.docs.map((doc) => [doc.id, doc.data()]);
-      setNotesList(notesList);
-      setIsLoading(false);
-    } catch (e) {
-      console.log(e);
-    }
+      setNoteList(notesList);
+      setIsLoadingList(false);
+    });
+
+    return unsubscribe;
   };
 
   const fetchNote = async () => {
-    setIsLoading(true);
+    setIsLoadingNote(true);
     try {
       if (!noteId) return;
       const docRef = doc(db, "notes", noteId);
@@ -70,7 +85,7 @@ const Notes = () => {
       const noteData = docSnapshot.data();
       setTitle(noteData.title);
       setContent(noteData.content);
-      setIsLoading(false);
+      setIsLoadingNote(false);
     } catch (e) {
       console.log(e);
     }
@@ -91,6 +106,9 @@ const Notes = () => {
           lastVisitedNoteId: "",
         });
         navigate("/notes");
+        toast.success("Note deleted!", {
+          id: "note-deleted",
+        });
       }
     } catch (e) {
       console.log(e);
@@ -133,6 +151,9 @@ const Notes = () => {
       content,
       modifiedAt: serverTimestamp(),
     });
+    toast.success("Note saved!", {
+      id: "note-saved",
+    });
   };
 
   const createNote = async () => {
@@ -151,26 +172,22 @@ const Notes = () => {
 
   useEffect(() => {
     fetchLastVisitedNote();
-    fetchNotesList();
+    const unsubscribe = fetchNotesList();
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      e.preventDefault();
-    };
-
+    const handleBeforeUnload = (e) => e.preventDefault();
     window.addEventListener("beforeunload", handleBeforeUnload);
-
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, []);
 
   useEffect(() => {
-    fetchNotesList();
     fetchNote();
   }, [noteId]);
 
   useEffect(() => {
-    setNotesList((prev) => {
+    setNoteList((prev) => {
       const updatedNotesList = prev.map((note) => {
         if (note[0] === noteId) {
           return [noteId, { ...note[1], title }];
@@ -182,103 +199,95 @@ const Notes = () => {
   }, [title]);
 
   return (
-    <div>
-      <div className="w-full bg-slate-400">
-        <div className="flex items-center justify-between max-w-screen-xl mx-auto">
-          <div className="flex gap-4">
-            <span>notes</span>
-            <span onClick={() => navigate("/recap")}>recap</span>
-          </div>
-          <div>
-            <span>{currentUser.email}</span>
-            <button
-              onClick={async () => {
-                const confirm = window.confirm("로그아웃 하시겠습니까?");
-                if (!confirm) return;
-
-                try {
-                  await auth.signOut(); // 로그아웃 후 navigate 호출
-                  navigate("/");
-                } catch (error) {
-                  console.error("Error signing out: ", error);
-                }
-              }}
-              className="p-2 rounded-2xl bg-slate-200">
-              Logout
-            </button>
+    <div className="flex gap-4 h-dvh">
+      <aside className="flex flex-col border-r border-r-slate-200 w-72">
+        <div className="flex items-center justify-between p-4">
+          <h1 className="text-xl font-bold">{auth.currentUser.email}</h1>
+          <div
+            className="p-2 hover:bg-slate-100 rounded-xl"
+            onClick={createNote}>
+            <FiPlusSquare />
           </div>
         </div>
-      </div>
-      <div>
-        <div className="flex max-w-screen-xl gap-4 mx-auto">
-          <aside className="w-72">
-            <div className="flex items-center justify-between p-4">
-              <h1 className="text-xl font-bold">Notes</h1>
-              <div
-                className="p-2 hover:bg-slate-100 rounded-xl"
-                onClick={createNote}>
-                <FiPlusSquare />
+
+        <div className="overflow-scroll grow">
+          {isLoadingList ? (
+            <div className="relative w-full h-full">
+              <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+                <PulseLoader color="#3b82f6" />
               </div>
             </div>
-            {isLoading ? (
-              <div>Loading...</div>
-            ) : notesList.length ? (
-              notesList.map((note) => {
-                const [id, data] = note;
-                return (
-                  <div
-                    key={id}
-                    className={`flex items-center justify-between p-4 cursor-pointer hover:bg-slate-300 ${
-                      id === noteId && "bg-slate-300"
-                    }`}
-                    onClick={() => handleNotesListItemClick(id)}>
-                    <div className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">
-                      {data.title ? data.title : "New note"}
-                    </div>
-                    <div
-                      className="p-2 hover:bg-slate-100 rounded-xl"
-                      onClick={(e) => deleteNote(e, id)}>
-                      <FaRegTrashAlt />
-                    </div>
+          ) : noteList.length ? (
+            noteList.map((note) => {
+              const [id, data] = note;
+              return (
+                <div
+                  key={id}
+                  className={`flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-blue-100 ${
+                    id === noteId && "bg-blue-300 font-bold"
+                  }`}
+                  onClick={() => handleNotesListItemClick(id)}>
+                  <div className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">
+                    {data.title ? data.title : "New note"}
                   </div>
-                );
-              })
-            ) : (
-              <div>Start writing!</div>
-            )}
-          </aside>
-          {isLoading ? (
-            <div>Loading...</div>
+                  <div
+                    className="p-2 hover:bg-slate-100 rounded-xl"
+                    onClick={(e) => deleteNote(e, id)}>
+                    <FaRegTrashAlt />
+                  </div>
+                </div>
+              );
+            })
           ) : (
-            <main className="grow">
+            <div>Start writing!</div>
+          )}
+        </div>
+      </aside>
+
+      <main className="relative h-dvh grow">
+        <div className="h-full max-w-screen-xl mx-auto">
+          {isLoadingNote ? (
+            <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+              <PulseLoader color="#3b82f6" />
+            </div>
+          ) : (
+            <div className="h-full">
               {noteId ? (
-                <div>
-                  <div className="flex">
+                <div className="flex flex-col h-full grow">
+                  <div className="flex gap-2 mb-4">
                     <input
                       type="text"
-                      style={{
-                        width: "100%",
-                        fontSize: "24px",
-                        fontWeight: 700,
-                      }}
+                      className="w-full text-2xl font-bold"
                       placeholder="New note"
                       value={title}
                       onChange={handleTitleChange}
                     />
+
                     <button
-                      className="p-2 ml-4 bg-slate-200 rounded-xl"
+                      className="p-2 hover:bg-blue-100 rounded-xl"
                       onClick={updateNote}>
-                      Save
+                      <div className="flex items-center gap-2">
+                        <FaRegSave />
+                        <div>Save</div>
+                      </div>
                     </button>
+
                     <button
-                      className="p-2 ml-4 bg-slate-200 rounded-xl"
+                      className="p-2 hover:bg-blue-100 rounded-xl"
                       onClick={() => setIsAISidebarOpen(!isAISidebarOpen)}>
-                      {isAISidebarOpen ? "Close Sidebar" : "Open Sidebar"}
+                      {isAISidebarOpen ? (
+                        <FaAngleDoubleRight />
+                      ) : (
+                        <FaAngleDoubleLeft />
+                      )}
                     </button>
                   </div>
                   <ReactQuill
                     theme="snow"
-                    className="w-full"
+                    style={{
+                      flexGrow: 1,
+                      overflowY: "auto",
+                    }}
                     placeholder="Start writing..."
                     modules={modules}
                     onChange={handleContentChange}
@@ -286,14 +295,16 @@ const Notes = () => {
                   />
                 </div>
               ) : (
-                <div>Select a note!</div>
+                <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+                  <div>Select a note!</div>
+                </div>
               )}
-            </main>
+            </div>
           )}
-
-          {isAISidebarOpen && <AISidebar />}
         </div>
-      </div>
+      </main>
+
+      {isAISidebarOpen && <AISidebar />}
     </div>
   );
 };
