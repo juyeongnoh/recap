@@ -177,7 +177,7 @@ const Chatbot = () => {
           <div>
             <button
               onClick={createChatRoom}
-              className="w-full p-4 font-bold text-white bg-blue-500 hover:bg-blue-400 rounded-xl">
+              className="w-full p-4 font-bold text-blue-500 transition-colors duration-300 ease-in-out border border-blue-500 hover:text-white hover:bg-blue-500 rounded-xl">
               + New chat
             </button>
           </div>
@@ -197,11 +197,11 @@ const Chatbot = () => {
                     <FaRegTrashAlt />
                   </div>
                 </div>
-                <p>
+                <small>
                   {convertTimestampToAmericanDateTime(
                     chatRoom.modifiedAt?.seconds
                   )}
-                </p>
+                </small>
               </div>
             ))}
           </div>

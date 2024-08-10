@@ -16,6 +16,7 @@ import {
 import {
   FaAngleDoubleLeft,
   FaAngleDoubleRight,
+  FaPowerOff,
   FaRegSave,
   FaRegTrashAlt,
 } from "react-icons/fa";
@@ -93,7 +94,7 @@ const Notes = () => {
 
   const deleteNote = async (e, id) => {
     e.stopPropagation();
-    const prompt = window.confirm("정말로 삭제하시겠습니까?");
+    const prompt = window.confirm("Are you sure you want to delete this?");
     if (!prompt) return;
 
     try {
@@ -200,17 +201,29 @@ const Notes = () => {
 
   return (
     <div className="flex gap-4 h-dvh">
-      <aside className="flex flex-col border-r border-r-slate-200 w-72">
-        <div className="flex items-center justify-between p-4">
-          <h1 className="text-xl font-bold">{auth.currentUser.email}</h1>
-          <div
-            className="p-2 hover:bg-slate-100 rounded-xl"
-            onClick={createNote}>
-            <FiPlusSquare />
+      <aside className="flex flex-col gap-4 p-2 border-r border-r-slate-200 w-72 shrink-0">
+        <div className="flex items-center">
+          <div className="flex gap-1 text-2xl font-bold text-center border border-blue-500 rounded-xl grow">
+            <div className="w-full py-2 text-white bg-blue-500 rounded-xl">
+              Notes
+            </div>
+            <div
+              className="w-full py-2 text-blue-500 transition-colors duration-300 ease-in-out hover:bg-blue-100 rounded-xl"
+              onClick={() => navigate("/recap")}>
+              Recap
+            </div>
           </div>
         </div>
 
-        <div className="overflow-scroll grow">
+        <div>
+          <button
+            className="w-full p-4 font-bold text-blue-500 transition-colors duration-300 ease-in-out border border-blue-500 hover:text-white hover:bg-blue-500 rounded-xl"
+            onClick={createNote}>
+            + New note
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-2 overflow-scroll grow">
           {isLoadingList ? (
             <div className="relative w-full h-full">
               <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
@@ -223,7 +236,7 @@ const Notes = () => {
               return (
                 <div
                   key={id}
-                  className={`flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-blue-100 ${
+                  className={`flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-blue-100 rounded-xl ${
                     id === noteId && "bg-blue-300 font-bold"
                   }`}
                   onClick={() => handleNotesListItemClick(id)}>
@@ -241,6 +254,26 @@ const Notes = () => {
           ) : (
             <div>Start writing!</div>
           )}
+        </div>
+
+        <div
+          className="p-4 hover:bg-blue-100 rounded-xl"
+          onClick={async () => {
+            const confirm = window.confirm("Are you sure you want to log out?");
+            if (!confirm) return;
+
+            try {
+              await auth.signOut();
+              navigate("/");
+            } catch (error) {
+              console.error("Error signing out: ", error);
+            }
+          }}>
+          <div className="flex items-center gap-2">
+            <FaPowerOff />
+            <div>Logout</div>
+          </div>
+          <div className="text-sm font-bold">{auth.currentUser.email}</div>
         </div>
       </aside>
 

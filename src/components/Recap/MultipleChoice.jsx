@@ -3,6 +3,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { db, functions } from "../../firebase";
 import { httpsCallable } from "firebase/functions";
+import { FaPlay, FaStepForward } from "react-icons/fa";
+import { PulseLoader } from "react-spinners";
+import toast from "react-hot-toast";
 
 // multiple_choice: {
 //   question_type: "string",
@@ -43,21 +46,28 @@ const MultipleChoice = ({ recapData }) => {
 
   const generateRecap = async () => {
     setIsGenerating(true);
-    const generateRecap = httpsCallable(functions, "generateRecap");
-    const recapId = await generateRecap({
-      noteId,
-      questionType: recapData.question_type,
-    });
 
-    console.log(recapData.question_type);
-    setIsGenerating(false);
-    setSelectedChoice("");
-    setStatus("NOT_ANSWERED_YET");
-    navigate(`/recap/${noteId}/${recapId.data.recapId}`);
+    try {
+      const generateRecap = httpsCallable(functions, "generateRecap");
+      const recapId = await generateRecap({
+        noteId,
+        questionType: recapData.question_type,
+      });
+
+      setIsGenerating(false);
+      setSelectedChoice("");
+      setStatus("NOT_ANSWERED_YET");
+      navigate(`/recap/${noteId}/${recapId.data.recapId}`);
+    } catch (e) {
+      console.log(e);
+      setIsGenerating(false);
+      toast.error("Failed to generate question. Please try again.", {
+        id: "failed-to-generate-question",
+      });
+    }
   };
 
   useEffect(() => {
-    console.log("status", status);
     updateRecap();
   }, [status]);
 
@@ -67,22 +77,38 @@ const MultipleChoice = ({ recapData }) => {
   }, [selectedChoice]);
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="mb-4 text-2xl font-semibold">Multiple Choice</h1>
+    <div className="flex flex-col gap-12">
+      <div className="flex items-center justify-between mt-2">
+        <h2 className="text-2xl font-semibold">Multiple Choice</h2>
         {status !== "CORRECT" && (
           <button
-            className="px-4 py-2 mt-4 text-white bg-blue-500 rounded disabled:bg-gray-500"
+            className="flex items-center justify-center w-32 h-10 font-bold text-white bg-blue-500 hover:bg-blue-400 rounded-xl disabled:bg-gray-500"
             onClick={generateRecap}
-            disabled={isGenerating}>
-            {isGenerating ? "Generating..." : "Skip"}
+            disabled={isGenerating || isChecking}>
+            {isGenerating ? (
+              <PulseLoader color="#ffffff" size={12} />
+            ) : (
+              <div className="flex items-center gap-2">
+                <div>Skip</div>
+                <FaStepForward />
+              </div>
+            )}
           </button>
         )}
       </div>
 
-      <div className="flex flex-col gap-4">
-        <div>Q. {recapData?.question}</div>
-        {status === "INCORRECT" && <small>hint: {recapData?.hint}</small>}
+      <div className="flex flex-col gap-12">
+        <div>
+          <div className="mb-4 text-2xl">Q. {recapData?.question}</div>
+          {status === "INCORRECT" && (
+            <p>
+              <span className="p-1 text-white bg-gray-500 rounded-md">
+                HINT
+              </span>{" "}
+              {recapData?.hint}
+            </p>
+          )}
+        </div>
 
         <div className="flex gap-4">
           {recapData?.choices.map((choice, index) => (
@@ -92,25 +118,33 @@ const MultipleChoice = ({ recapData }) => {
                 if (status === "CORRECT") return;
                 handleChoiceClick(choice);
               }}
-              className={`box-border p-4 border rounded w-44 ${
+              className={`box-border p-4 border rounded-xl w-full transition-colors hover:bg-blue-500 hover:text-white duration-300 ease-in-out ${
                 selectedChoice === choice &&
                 status === "INCORRECT" &&
-                "border-red-500"
+                "bg-red-500 text-white"
               } ${
                 selectedChoice === choice &&
                 status === "CORRECT" &&
-                "border-green-500"
+                "bg-green-500 text-white"
               }`}>
               {choice}
             </div>
           ))}
         </div>
+
         {status === "CORRECT" && (
           <button
-            className="px-4 py-2 mt-4 text-white bg-blue-500 rounded disabled:bg-gray-500"
+            className="flex items-center justify-center w-full h-12 font-bold text-white bg-blue-500 hover:bg-blue-400 rounded-xl disabled:bg-gray-500"
             onClick={generateRecap}
             disabled={isGenerating}>
-            {isGenerating ? "Generating..." : "Next"}
+            {isGenerating ? (
+              <PulseLoader color="#ffffff" size={12} />
+            ) : (
+              <div className="flex items-center gap-2">
+                <div>Next</div>
+                <FaPlay />
+              </div>
+            )}
           </button>
         )}
       </div>

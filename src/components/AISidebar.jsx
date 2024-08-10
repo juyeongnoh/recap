@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import KeyTerms from "./KeyTerms";
 import Chatbot from "./Chatbot";
 import KeyConcepts from "./KeyConcepts";
@@ -6,10 +6,6 @@ import { FaRegFileWord, FaRobot, FaSearch } from "react-icons/fa";
 
 const AISidebar = () => {
   const [currentTab, setCurrentTab] = useState("Key Terms");
-
-  useEffect(() => {
-    console.log("Current tab is", currentTab);
-  }, [currentTab]);
 
   return (
     <aside className="flex flex-col border-l w-72 border-l-slate-200 shrink-0">

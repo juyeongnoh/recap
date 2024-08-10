@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { auth } from "./firebase";
 import Recap from "./pages/Recap";
 import { Toaster } from "react-hot-toast";
+import { PulseLoader } from "react-spinners";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -22,7 +23,11 @@ function App() {
   }, []);
 
   return loading ? (
-    <div>Loading...</div>
+    <div className="relative w-dvw h-dvh">
+      <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+        <PulseLoader color="#3b82f6" />
+      </div>
+    </div>
   ) : (
     <div>
       <Toaster position="bottom-center" />
