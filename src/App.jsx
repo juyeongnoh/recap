@@ -6,6 +6,7 @@ import Notes from "./pages/Notes";
 import MainLayout from "./layouts/MainLayout";
 import { useEffect, useState } from "react";
 import { auth } from "./firebase";
+import Recap from "./pages/Recap";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -29,6 +30,7 @@ function App() {
 
       <Route element={<MainLayout />}>
         <Route path="/notes/:noteId?" element={<Notes />} />
+        <Route path="/recap/:noteId?/:recapId?" element={<Recap />} />
       </Route>
     </Routes>
   );

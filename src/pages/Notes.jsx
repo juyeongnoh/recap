@@ -185,7 +185,10 @@ const Notes = () => {
     <div>
       <div className="w-full bg-slate-400">
         <div className="flex items-center justify-between max-w-screen-xl mx-auto">
-          <div>recap</div>
+          <div className="flex gap-4">
+            <span>notes</span>
+            <span onClick={() => navigate("/recap")}>recap</span>
+          </div>
           <div>
             <span>{currentUser.email}</span>
             <button
