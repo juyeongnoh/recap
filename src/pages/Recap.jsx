@@ -2,23 +2,22 @@ import React, { useEffect, useState } from "react";
 import { auth, db, functions } from "../firebase";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  addDoc,
   collection,
   deleteDoc,
   doc,
   getDoc,
   onSnapshot,
   query,
-  serverTimestamp,
   updateDoc,
   where,
 } from "firebase/firestore";
-import { FiPlusSquare } from "react-icons/fi";
 import {
   FaAngleLeft,
   FaCheck,
   FaPowerOff,
   FaRegFileWord,
+  FaRegLightbulb,
+  FaRegStickyNote,
   FaRegTrashAlt,
   FaSearch,
 } from "react-icons/fa";
@@ -62,18 +61,6 @@ const Recap = () => {
     });
 
     return unsubscribe;
-  };
-
-  const createNote = async () => {
-    const collectionRef = collection(db, "notes");
-    const docRef = await addDoc(collectionRef, {
-      uid: currentUser.uid,
-      title: "",
-      content: "",
-      createdAt: serverTimestamp(),
-      modifiedAt: serverTimestamp(),
-    });
-    navigate(`/notes/${docRef.id}`);
   };
 
   const deleteNote = async (e, id) => {
@@ -207,71 +194,79 @@ const Recap = () => {
 
   return (
     <div className="flex gap-4 h-dvh">
-      <aside className="flex flex-col gap-4 p-2 border-r border-r-slate-200 w-72 shrink-0">
-        <div className="flex items-center">
-          <div className="flex gap-1 text-2xl font-bold text-center border border-blue-500 rounded-xl grow">
+      <aside className="flex flex-col border-r border-r-slate-200 w-72 shrink-0 bg-slate-50">
+        <div className="flex justify-between border-b border-b-slate-200">
+          <button className="w-full p-2 hover:bg-blue-100">
             <div
-              className="w-full py-2 text-blue-500 transition-colors duration-300 ease-in-out hover:bg-blue-100 rounded-xl"
+              className="flex flex-col items-center gap-2"
               onClick={() => navigate("/notes")}>
-              Notes
+              <FaRegStickyNote className="text-2xl" />
+              <div className="text-xs">Notes</div>
             </div>
-            <div className="w-full py-2 text-white bg-blue-500 rounded-xl">
-              Recap
+          </button>
+          <button className="w-full p-2 bg-blue-300 hover:bg-blue-100">
+            <div className="flex flex-col items-center gap-2">
+              <FaRegLightbulb className="text-2xl" />
+              <div className="text-xs">Recap</div>
             </div>
-          </div>
+          </button>
         </div>
 
-        <div className="flex flex-col gap-2 overflow-scroll grow">
-          {isLoadingList ? (
-            <div className="relative w-full h-full">
-              <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
-                <PulseLoader color="#3b82f6" />
-              </div>
-            </div>
-          ) : noteList.length ? (
-            noteList.map((note) => {
-              const [id, data] = note;
-              return (
-                <div
-                  key={id}
-                  className={`flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-blue-100 rounded-xl ${
-                    id === noteId && "bg-blue-300 font-bold"
-                  }`}
-                  onClick={() => handleNotesListItemClick(id)}>
-                  <div className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">
-                    {data.title ? data.title : "New note"}
-                  </div>
-                  <div
-                    className="p-2 hover:bg-slate-100 rounded-xl"
-                    onClick={(e) => deleteNote(e, id)}>
-                    <FaRegTrashAlt />
-                  </div>
+        <div className="flex flex-col gap-4 p-2 overflow-auto grow">
+          <div className="flex flex-col gap-2 overflow-scroll grow">
+            {isLoadingList ? (
+              <div className="relative w-full h-full">
+                <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+                  <PulseLoader color="#3b82f6" />
                 </div>
-              );
-            })
-          ) : (
-            <div>Start writing!</div>
-          )}
-        </div>
-
-        <div
-          className="p-4 hover:bg-blue-100 rounded-xl"
-          onClick={async () => {
-            const confirm = window.confirm("Are you sure you want to log out?");
-            if (!confirm) return;
-
-            try {
-              await auth.signOut();
-              navigate("/");
-            } catch (error) {
-              console.error("Error signing out: ", error);
-            }
-          }}>
-          <div className="flex items-center gap-2">
-            <FaPowerOff />
-            <div>Logout</div>
+              </div>
+            ) : noteList.length ? (
+              noteList.map((note) => {
+                const [id, data] = note;
+                return (
+                  <div
+                    key={id}
+                    className={`flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-blue-100 rounded-xl ${
+                      id === noteId && "bg-blue-300 font-bold"
+                    }`}
+                    onClick={() => handleNotesListItemClick(id)}>
+                    <div className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">
+                      {data.title ? data.title : "New note"}
+                    </div>
+                    <div
+                      className="p-2 hover:bg-slate-100 rounded-xl"
+                      onClick={(e) => deleteNote(e, id)}>
+                      <FaRegTrashAlt />
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div>Start writing!</div>
+            )}
           </div>
-          <div className="text-sm font-bold">{auth.currentUser.email}</div>
+
+          <div
+            className="p-4 hover:bg-blue-100 rounded-xl"
+            onClick={async () => {
+              const confirm = window.confirm(
+                "Are you sure you want to log out?"
+              );
+              if (!confirm) return;
+
+              try {
+                await auth.signOut();
+                navigate("/");
+              } catch (error) {
+                console.error("Error signing out: ", error);
+              }
+            }}>
+            <div className="flex items-center gap-2">
+              <FaPowerOff />
+              <div>Logout</div>
+            </div>
+            <div className="text-sm font-bold">{auth.currentUser.email}</div>
+          </div>
         </div>
       </aside>
 
@@ -353,7 +348,12 @@ const Recap = () => {
               ) : (
                 <div className="flex flex-col h-full">
                   <div className="flex items-center justify-between mt-2">
-                    <h2 className="text-2xl font-bold grow">{documentTitle}</h2>
+                    <h2
+                      className={`text-2xl font-bold grow ${
+                        !documentTitle && "text-gray-400"
+                      }`}>
+                      {documentTitle ? documentTitle : "New note"}
+                    </h2>
                     <button
                       onClick={() => setIsShowQuestionTypeSelect(true)}
                       className="px-4 py-2 font-bold text-white bg-blue-500 hover:bg-blue-400 rounded-xl">

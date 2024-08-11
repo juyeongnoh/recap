@@ -84,7 +84,7 @@ const MultipleChoice = ({ recapData }) => {
           <button
             className="flex items-center justify-center w-32 h-10 font-bold text-white bg-blue-500 hover:bg-blue-400 rounded-xl disabled:bg-gray-500"
             onClick={generateRecap}
-            disabled={isGenerating || isChecking}>
+            disabled={isGenerating}>
             {isGenerating ? (
               <PulseLoader color="#ffffff" size={12} />
             ) : (
@@ -131,6 +131,15 @@ const MultipleChoice = ({ recapData }) => {
             </div>
           ))}
         </div>
+
+        {status === "CORRECT" && (
+          <p>
+            <span className="p-1 text-white bg-gray-500 rounded-md">
+              ANSWER
+            </span>{" "}
+            {recapData?.answer}
+          </p>
+        )}
 
         {status === "CORRECT" && (
           <button

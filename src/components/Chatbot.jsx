@@ -7,7 +7,7 @@ import {
   serverTimestamp,
   updateDoc,
 } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { db } from "../firebase";
 import { FaAngleLeft, FaArrowUp, FaRegTrashAlt } from "react-icons/fa";
@@ -20,6 +20,8 @@ const Chatbot = () => {
 
   const [title, setTitle] = useState("");
   const [messages, setMessages] = useState([]);
+
+  const messageRef = useRef(null);
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
@@ -85,6 +87,16 @@ const Chatbot = () => {
     }
   };
 
+  const scrollToBottom = () => {
+    if (messageRef.current) {
+      messageRef.current.scrollTop = messageRef.current.scrollHeight;
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   useEffect(() => {
     const unsubscribe = fetchChatRoomsList();
     return () => unsubscribe();
@@ -121,7 +133,7 @@ const Chatbot = () => {
             </h2>
           </div>
 
-          <div className="overflow-scroll grow">
+          <div ref={messageRef} className="overflow-scroll grow">
             <div className="p-4 mb-4 text-xs text-center bg-gray-200 rounded-xl">
               💡 The chatbot provides answers based on the content of the note.
             </div>
@@ -173,7 +185,7 @@ const Chatbot = () => {
           </form>
         </div>
       ) : (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col h-full gap-2">
           <div>
             <button
               onClick={createChatRoom}

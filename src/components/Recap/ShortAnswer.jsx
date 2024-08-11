@@ -151,6 +151,15 @@ const ShortAnswer = ({ recapData }) => {
         </form>
 
         {status === "CORRECT" && (
+          <p>
+            <span className="p-1 text-white bg-gray-500 rounded-md">
+              ANSWER
+            </span>{" "}
+            {recapData?.answer}
+          </p>
+        )}
+
+        {status === "CORRECT" && (
           <button
             className="flex items-center justify-center w-full h-12 font-bold text-white bg-blue-500 hover:bg-blue-400 rounded-xl disabled:bg-gray-500"
             onClick={generateRecap}

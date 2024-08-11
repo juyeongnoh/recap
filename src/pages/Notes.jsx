@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { auth, db } from "../firebase";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -17,15 +17,19 @@ import {
   FaAngleDoubleLeft,
   FaAngleDoubleRight,
   FaPowerOff,
+  FaRegFilePdf,
+  FaRegLightbulb,
   FaRegSave,
+  FaRegStickyNote,
   FaRegTrashAlt,
 } from "react-icons/fa";
-import { FiPlusSquare } from "react-icons/fi";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import AISidebar from "../components/AISidebar";
 import { PulseLoader } from "react-spinners";
 import toast from "react-hot-toast";
+import { pdfExporter } from "quill-to-pdf";
+import { saveAs } from "file-saver";
 
 const Notes = () => {
   const navigate = useNavigate();
@@ -37,6 +41,8 @@ const Notes = () => {
   const [isLoadingList, setIsLoadingList] = useState(true);
 
   const [isAISidebarOpen, setIsAISidebarOpen] = useState(false);
+
+  const editorRef = useRef(null);
 
   const { noteId } = useParams();
   const { currentUser } = auth;
@@ -171,6 +177,12 @@ const Notes = () => {
     navigate(`/notes/${docRef.id}`);
   };
 
+  const exportAsPDF = async () => {
+    const delta = editorRef.current?.editor?.getContents(); // gets the Quill delta
+    const pdfAsBlob = await pdfExporter.generatePdf(delta); // converts to PDF
+    saveAs(pdfAsBlob, `${title}.pdf`);
+  };
+
   useEffect(() => {
     fetchLastVisitedNote();
     const unsubscribe = fetchNotesList();
@@ -200,80 +212,88 @@ const Notes = () => {
   }, [title]);
 
   return (
-    <div className="flex gap-4 h-dvh">
-      <aside className="flex flex-col gap-4 p-2 border-r border-r-slate-200 w-72 shrink-0">
-        <div className="flex items-center">
-          <div className="flex gap-1 text-2xl font-bold text-center border border-blue-500 rounded-xl grow">
-            <div className="w-full py-2 text-white bg-blue-500 rounded-xl">
-              Notes
+    <div className="flex gap-2 h-dvh">
+      <aside className="flex flex-col border-r border-r-slate-200 w-72 shrink-0 bg-slate-50">
+        <div className="flex justify-between border-b border-b-slate-200">
+          <button className="w-full p-2 bg-blue-300 hover:bg-blue-100">
+            <div className="flex flex-col items-center gap-2">
+              <FaRegStickyNote className="text-2xl" />
+              <div className="text-xs">Notes</div>
             </div>
-            <div
-              className="w-full py-2 text-blue-500 transition-colors duration-300 ease-in-out hover:bg-blue-100 rounded-xl"
-              onClick={() => navigate("/recap")}>
-              Recap
-            </div>
-          </div>
-        </div>
-
-        <div>
+          </button>
           <button
-            className="w-full p-4 font-bold text-blue-500 transition-colors duration-300 ease-in-out border border-blue-500 hover:text-white hover:bg-blue-500 rounded-xl"
-            onClick={createNote}>
-            + New note
+            className="w-full p-2 hover:bg-blue-100"
+            onClick={() => navigate("/recap")}>
+            <div className="flex flex-col items-center gap-2">
+              <FaRegLightbulb className="text-2xl" />
+              <div className="text-xs">Recap</div>
+            </div>
           </button>
         </div>
 
-        <div className="flex flex-col gap-2 overflow-scroll grow">
-          {isLoadingList ? (
-            <div className="relative w-full h-full">
-              <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
-                <PulseLoader color="#3b82f6" />
-              </div>
-            </div>
-          ) : noteList.length ? (
-            noteList.map((note) => {
-              const [id, data] = note;
-              return (
-                <div
-                  key={id}
-                  className={`flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-blue-100 rounded-xl ${
-                    id === noteId && "bg-blue-300 font-bold"
-                  }`}
-                  onClick={() => handleNotesListItemClick(id)}>
-                  <div className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">
-                    {data.title ? data.title : "New note"}
-                  </div>
-                  <div
-                    className="p-2 hover:bg-slate-100 rounded-xl"
-                    onClick={(e) => deleteNote(e, id)}>
-                    <FaRegTrashAlt />
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            <div>Start writing!</div>
-          )}
-        </div>
-
-        <div
-          className="p-4 hover:bg-blue-100 rounded-xl"
-          onClick={async () => {
-            const confirm = window.confirm("Are you sure you want to log out?");
-            if (!confirm) return;
-
-            try {
-              await auth.signOut();
-              navigate("/");
-            } catch (error) {
-              console.error("Error signing out: ", error);
-            }
-          }}>
-          <div className="flex items-center gap-2">
-            <FaPowerOff />
-            <div>Logout</div>
+        <div className="flex flex-col gap-4 p-2 overflow-auto grow">
+          <div>
+            <button
+              className="w-full p-4 font-bold text-blue-500 transition-colors duration-300 ease-in-out border border-blue-500 hover:text-white hover:bg-blue-500 rounded-xl"
+              onClick={createNote}>
+              + New note
+            </button>
           </div>
-          <div className="text-sm font-bold">{auth.currentUser.email}</div>
+
+          <div className="flex flex-col gap-2 overflow-scroll grow">
+            {isLoadingList ? (
+              <div className="relative w-full h-full">
+                <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+                  <PulseLoader color="#3b82f6" />
+                </div>
+              </div>
+            ) : noteList.length ? (
+              noteList.map((note) => {
+                const [id, data] = note;
+                return (
+                  <div
+                    key={id}
+                    className={`flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-blue-100 rounded-xl ${
+                      id === noteId && "bg-blue-300 font-bold"
+                    }`}
+                    onClick={() => handleNotesListItemClick(id)}>
+                    <div className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">
+                      {data.title ? data.title : "New note"}
+                    </div>
+                    <div
+                      className="p-2 hover:bg-slate-100 rounded-xl"
+                      onClick={(e) => deleteNote(e, id)}>
+                      <FaRegTrashAlt />
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div>Start writing!</div>
+            )}
+          </div>
+
+          <div
+            className="p-4 hover:bg-blue-100 rounded-xl"
+            onClick={async () => {
+              const confirm = window.confirm(
+                "Are you sure you want to log out?"
+              );
+              if (!confirm) return;
+
+              try {
+                await auth.signOut();
+                navigate("/");
+              } catch (error) {
+                console.error("Error signing out: ", error);
+              }
+            }}>
+            <div className="flex items-center gap-2">
+              <FaPowerOff />
+              <div>Logout</div>
+            </div>
+            <div className="text-sm font-bold">{auth.currentUser.email}</div>
+          </div>
         </div>
       </aside>
 
@@ -307,6 +327,15 @@ const Notes = () => {
 
                     <button
                       className="p-2 hover:bg-blue-100 rounded-xl"
+                      onClick={exportAsPDF}>
+                      <div className="flex items-center gap-2">
+                        <FaRegFilePdf />
+                        <div>PDF</div>
+                      </div>
+                    </button>
+
+                    <button
+                      className="p-2 hover:bg-blue-100 rounded-xl"
                       onClick={() => setIsAISidebarOpen(!isAISidebarOpen)}>
                       {isAISidebarOpen ? (
                         <FaAngleDoubleRight />
@@ -316,6 +345,7 @@ const Notes = () => {
                     </button>
                   </div>
                   <ReactQuill
+                    ref={editorRef}
                     theme="snow"
                     style={{
                       flexGrow: 1,
