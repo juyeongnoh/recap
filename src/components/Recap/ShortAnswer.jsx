@@ -4,7 +4,7 @@ import { db, functions } from "../../firebase";
 import { doc, updateDoc } from "firebase/firestore";
 import { useNavigate, useParams } from "react-router-dom";
 import { PulseLoader } from "react-spinners";
-import { FaPlay, FaStepForward } from "react-icons/fa";
+import { FaAngleLeft, FaPlay, FaStepForward } from "react-icons/fa";
 import toast from "react-hot-toast";
 
 // short_answer: {
@@ -101,6 +101,11 @@ const ShortAnswer = ({ recapData }) => {
   return (
     <div className="flex flex-col gap-12">
       <div className="flex items-center justify-between mt-2">
+        <button
+          onClick={() => navigate(`/recap/${noteId}`)}
+          className="p-2 text-2xl top-4 hover:bg-blue-100 rounded-xl">
+          <FaAngleLeft />
+        </button>
         <h2 className="text-2xl font-semibold">Short Answer</h2>
         {status !== "CORRECT" && (
           <button

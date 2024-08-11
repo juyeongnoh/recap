@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { db, functions } from "../../firebase";
 import { httpsCallable } from "firebase/functions";
-import { FaPlay, FaStepForward } from "react-icons/fa";
+import { FaAngleLeft, FaPlay, FaStepForward } from "react-icons/fa";
 import { PulseLoader } from "react-spinners";
 import toast from "react-hot-toast";
 
@@ -79,6 +79,11 @@ const MultipleChoice = ({ recapData }) => {
   return (
     <div className="flex flex-col gap-12">
       <div className="flex items-center justify-between mt-2">
+        <button
+          onClick={() => navigate(`/recap/${noteId}`)}
+          className="p-2 text-2xl top-4 hover:bg-blue-100 rounded-xl">
+          <FaAngleLeft />
+        </button>
         <h2 className="text-2xl font-semibold">Multiple Choice</h2>
         {status !== "CORRECT" && (
           <button
