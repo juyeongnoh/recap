@@ -42,23 +42,31 @@ const KeyTerms = () => {
       </div>
     </div>
   ) : (
-    <div className="flex flex-col gap-4">
-      {keyTerms.map((keyTerm, index) => {
-        const { term, meaning } = keyTerm;
-        return (
-          <div key={index} className="p-2 rounded-xl hover:bg-blue-100">
-            <div className="flex items-center">
-              <h2 className="text-lg font-semibold grow">{term}</h2>
-              <div
-                className="p-2 hover:bg-slate-100 rounded-xl"
-                onClick={() => copyToClipboard(`${term}: ${meaning}`)}>
-                <FaRegCopy />
+    <div className="flex flex-col h-full gap-4">
+      {keyTerms.length ? (
+        keyTerms.map((keyTerm, index) => {
+          const { term, meaning } = keyTerm;
+          return (
+            <div key={index} className="p-2 rounded-xl hover:bg-blue-100">
+              <div className="flex items-center">
+                <h2 className="text-lg font-semibold grow">{term}</h2>
+                <div
+                  className="p-2 hover:bg-slate-100 rounded-xl"
+                  onClick={() => copyToClipboard(`${term}: ${meaning}`)}>
+                  <FaRegCopy />
+                </div>
               </div>
+              <p>{meaning}</p>
             </div>
-            <p>{meaning}</p>
+          );
+        })
+      ) : (
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center text-gray-500">
+            If you write content in the notes, the key terms will be updated.
           </div>
-        );
-      })}
+        </div>
+      )}
     </div>
   );
 };

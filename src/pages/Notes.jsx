@@ -10,7 +10,6 @@ import {
   onSnapshot,
   query,
   serverTimestamp,
-  setDoc,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -87,7 +86,10 @@ const Notes = () => {
   const fetchNote = async () => {
     setIsLoadingNote(true);
     try {
-      if (!noteId) return;
+      if (!noteId) {
+        setIsLoadingNote(false);
+        return;
+      }
       const docRef = doc(db, "notes", noteId);
       const docSnapshot = await getDoc(docRef);
       const noteData = docSnapshot.data();
@@ -123,6 +125,17 @@ const Notes = () => {
     }
   };
 
+  const updateLastVisitedNote = async (id) => {
+    try {
+      const docRef = doc(db, "users", currentUser.uid);
+      await updateDoc(docRef, {
+        lastVisitedNoteId: id || "",
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   const handleNotesListItemClick = async (id) => {
     if (noteId === id) return;
 
@@ -130,10 +143,7 @@ const Notes = () => {
       // 페이지 이동 전에 현재 노트 저장
       if (noteId) updateNote();
 
-      const docRef = doc(db, "users", currentUser.uid);
-      await updateDoc(docRef, {
-        lastVisitedNoteId: id,
-      });
+      updateLastVisitedNote(id);
       navigate(`/notes/${id}`);
     } catch (e) {
       console.log(e);
@@ -271,7 +281,11 @@ const Notes = () => {
                 );
               })
             ) : (
-              <div>Start writing!</div>
+              <div className="flex items-center justify-center h-full ">
+                <div className="text-gray-500">
+                  Click new note to start writing!
+                </div>
+              </div>
             )}
           </div>
 
@@ -360,8 +374,8 @@ const Notes = () => {
                   />
                 </div>
               ) : (
-                <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
-                  <div>Select a note!</div>
+                <div className="flex items-center justify-center h-full ">
+                  <div className="text-gray-500">Select a note!</div>
                 </div>
               )}
             </div>

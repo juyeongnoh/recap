@@ -42,32 +42,40 @@ const KeyConcepts = () => {
       </div>
     </div>
   ) : (
-    <div className="flex flex-col gap-4">
-      {keyConcepts.map((keyConcept, index) => {
-        const { concept, description } = keyConcept;
-        const example = keyConcept.example || "";
-        return (
-          <div key={index} className="p-2 rounded-xl hover:bg-blue-100">
-            <div className="flex items-center">
-              <h2 className="text-lg font-semibold grow">{concept}</h2>
-              <div
-                className="p-2 hover:bg-slate-100 rounded-xl"
-                onClick={() => copyToClipboard(`${concept}: ${description}`)}>
-                <FaRegCopy />
+    <div className="flex flex-col h-full gap-4">
+      {keyConcepts.length ? (
+        keyConcepts.map((keyConcept, index) => {
+          const { concept, description } = keyConcept;
+          const example = keyConcept.example || "";
+          return (
+            <div key={index} className="p-2 rounded-xl hover:bg-blue-100">
+              <div className="flex items-center">
+                <h2 className="text-lg font-semibold grow">{concept}</h2>
+                <div
+                  className="p-2 hover:bg-slate-100 rounded-xl"
+                  onClick={() => copyToClipboard(`${concept}: ${description}`)}>
+                  <FaRegCopy />
+                </div>
               </div>
+              <p>{description}</p>
+              {example && (
+                <div>
+                  <span className="px-1 text-sm text-white bg-gray-500 rounded-sm">
+                    ex
+                  </span>{" "}
+                  <span className="text-sm text-gray-500">{example}</span>
+                </div>
+              )}
             </div>
-            <p>{description}</p>
-            {example && (
-              <div>
-                <span className="px-1 text-sm text-white bg-gray-500 rounded-sm">
-                  ex
-                </span>{" "}
-                <span className="text-sm text-gray-500">{example}</span>
-              </div>
-            )}
+          );
+        })
+      ) : (
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center text-gray-500">
+            If you write content in the notes, the key contents will be updated.
           </div>
-        );
-      })}
+        </div>
+      )}
     </div>
   );
 };

@@ -16,7 +16,6 @@ import {
   FaCheck,
   FaCheckCircle,
   FaCircle,
-  FaMinus,
   FaMinusCircle,
   FaPowerOff,
   FaRegFilePdf,
@@ -291,7 +290,11 @@ const Recap = () => {
                 );
               })
             ) : (
-              <div>Start writing!</div>
+              <div className="flex items-center justify-center h-full">
+                <div className="text-gray-500">
+                  Click Notes tap to start writing!
+                </div>
+              </div>
             )}
           </div>
 
@@ -396,89 +399,106 @@ const Recap = () => {
                 </div>
               ) : (
                 <div className="flex flex-col h-full">
-                  <div className="flex items-center justify-between gap-2 mt-2">
-                    <h2
-                      className={`text-2xl font-bold grow ${
-                        !documentTitle && "text-gray-400"
-                      }`}>
-                      {documentTitle ? documentTitle : "New note"}
-                    </h2>
-                    <button
-                      onClick={() => {
-                        modalRef.current.showModal();
-                      }}
-                      className="px-4 py-2 font-bold text-blue-500 border border-blue-500 hover:text-white hover:bg-blue-500 rounded-xl">
-                      <div className="flex items-center gap-2">
-                        <FaRegFilePdf />
-                        <span>PDF</span>
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => setIsShowQuestionTypeSelect(true)}
-                      className="px-4 py-2 font-bold text-white bg-blue-500 hover:bg-blue-400 rounded-xl">
-                      + Start recap
-                    </button>
-                  </div>
-                  <div className="mt-4 overflow-scroll grow">
-                    {recapList.length ? (
-                      recapList.map((recap, index) => {
-                        return (
-                          <div
-                            key={recap.id}
-                            className={`p-4 mb-4 rounded-xl ${
-                              recap.data.status === "CORRECT" && "bg-blue-100"
-                            } ${
-                              recap.data.status === "INCORRECT" && "bg-red-100"
-                            } ${
-                              recap.data.status === "NOT_ANSWERED_YET" &&
-                              "bg-gray-100"
-                            }`}>
-                            <div className="flex justify-between">
-                              <div className="flex items-center gap-2">
-                                {recap.data.status === "CORRECT" && (
-                                  <div className="flex items-center text-green-500">
-                                    <FaCheckCircle />
-                                  </div>
-                                )}
-                                {recap.data.status === "INCORRECT" && (
-                                  <div className="text-red-500">
-                                    <FaMinusCircle />
-                                  </div>
-                                )}
-                                {recap.data.status === "NOT_ANSWERED_YET" && (
-                                  <div className="text-gray-500">
-                                    <FaCircle />
-                                  </div>
-                                )}
-                                <Badge
-                                  questionType={recap.data.question_type}
-                                />
-                                <Badge
-                                  questionType={recap.data.question_format}
-                                />
-                              </div>
-                              <div
-                                className="p-2 hover:bg-slate-100 rounded-xl"
-                                onClick={() => deleteRecap(recap.id)}>
-                                <FaRegTrashAlt />
-                              </div>
-                            </div>
-                            <h2 className="text-lg font-semibold">
-                              Q. {recap.data.question}
-                            </h2>
-                            <p>
-                              A.{" "}
-                              {Array.isArray(recap.data.answer)
-                                ? recap.data.answer.join(", ")
-                                : recap.data.answer}
-                            </p>
+                  {noteId ? (
+                    <>
+                      <div className="flex items-center justify-between gap-2 mt-2">
+                        <h2
+                          className={`text-2xl font-bold grow ${
+                            !documentTitle && "text-gray-400"
+                          }`}>
+                          {documentTitle ? documentTitle : "New note"}
+                        </h2>
+                        <button
+                          onClick={() => {
+                            modalRef.current.showModal();
+                          }}
+                          className="px-4 py-2 font-bold text-blue-500 border border-blue-500 hover:text-white hover:bg-blue-500 rounded-xl">
+                          <div className="flex items-center gap-2">
+                            <FaRegFilePdf />
+                            <span>PDF</span>
                           </div>
-                        );
-                      })
-                    ) : (
-                      <div>Start recap! 문제를 생성해서 복습해보세요</div>
-                    )}
-                  </div>
+                        </button>
+                        <button
+                          onClick={() => setIsShowQuestionTypeSelect(true)}
+                          className="px-4 py-2 font-bold text-white bg-blue-500 hover:bg-blue-400 rounded-xl">
+                          + Start Recap
+                        </button>
+                      </div>
+                      <div className="mt-4 overflow-scroll grow">
+                        {recapList.length ? (
+                          recapList.map((recap, index) => {
+                            return (
+                              <div
+                                key={recap.id}
+                                className={`p-4 mb-4 rounded-xl ${
+                                  recap.data.status === "CORRECT" &&
+                                  "bg-blue-100"
+                                } ${
+                                  recap.data.status === "INCORRECT" &&
+                                  "bg-red-100"
+                                } ${
+                                  recap.data.status === "NOT_ANSWERED_YET" &&
+                                  "bg-gray-100"
+                                }`}>
+                                <div className="flex justify-between">
+                                  <div className="flex items-center gap-2">
+                                    {recap.data.status === "CORRECT" && (
+                                      <div className="flex items-center text-green-500">
+                                        <FaCheckCircle />
+                                      </div>
+                                    )}
+                                    {recap.data.status === "INCORRECT" && (
+                                      <div className="text-red-500">
+                                        <FaMinusCircle />
+                                      </div>
+                                    )}
+                                    {recap.data.status ===
+                                      "NOT_ANSWERED_YET" && (
+                                      <div className="text-gray-500">
+                                        <FaCircle />
+                                      </div>
+                                    )}
+                                    <Badge
+                                      questionType={recap.data.question_type}
+                                    />
+                                    <Badge
+                                      questionType={recap.data.question_format}
+                                    />
+                                  </div>
+                                  <div
+                                    className="p-2 hover:bg-slate-100 rounded-xl"
+                                    onClick={() => deleteRecap(recap.id)}>
+                                    <FaRegTrashAlt />
+                                  </div>
+                                </div>
+                                <h2 className="text-lg font-semibold">
+                                  Q. {recap.data.question}
+                                </h2>
+                                <p>
+                                  A.{" "}
+                                  {Array.isArray(recap.data.answer)
+                                    ? recap.data.answer.join(", ")
+                                    : recap.data.answer}
+                                </p>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div className="flex items-center justify-center h-full">
+                            <div className="text-gray-500">
+                              Click Start Recap to solve questions!
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-gray-500">
+                        Select a note to recap!
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

@@ -194,28 +194,36 @@ const Chatbot = () => {
             </button>
           </div>
           <div className="flex flex-col gap-2 overflow-scroll grow">
-            {chatRoomsList.map((chatRoom) => (
-              <div
-                key={chatRoom.id}
-                className="p-2 rounded-xl hover:bg-blue-100"
-                onClick={() => setDocumentId(chatRoom.id)}>
-                <div className="flex items-center">
-                  <h2 className="text-lg font-semibold grow">
-                    {chatRoom.title ? chatRoom.title : "A new chat"}
-                  </h2>
-                  <div
-                    className="p-2 hover:bg-slate-100 rounded-xl"
-                    onClick={(e) => deleteChatRoom(e, chatRoom.id)}>
-                    <FaRegTrashAlt />
+            {chatRoomsList.length ? (
+              chatRoomsList.map((chatRoom) => (
+                <div
+                  key={chatRoom.id}
+                  className="p-2 rounded-xl hover:bg-blue-100"
+                  onClick={() => setDocumentId(chatRoom.id)}>
+                  <div className="flex items-center">
+                    <h2 className="text-lg font-semibold grow">
+                      {chatRoom.title ? chatRoom.title : "A new chat"}
+                    </h2>
+                    <div
+                      className="p-2 hover:bg-slate-100 rounded-xl"
+                      onClick={(e) => deleteChatRoom(e, chatRoom.id)}>
+                      <FaRegTrashAlt />
+                    </div>
                   </div>
+                  <small>
+                    {convertTimestampToAmericanDateTime(
+                      chatRoom.modifiedAt?.seconds
+                    )}
+                  </small>
                 </div>
-                <small>
-                  {convertTimestampToAmericanDateTime(
-                    chatRoom.modifiedAt?.seconds
-                  )}
-                </small>
+              ))
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center text-gray-500">
+                  Start a new chat by clicking the button above.
+                </div>
               </div>
-            ))}
+            )}
           </div>
         </div>
       )}
