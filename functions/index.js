@@ -1,21 +1,30 @@
 const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { Firestore } = require("firebase-admin/firestore");
+
+// Import prompt templates
+const { quizPromptTemplate } = require("./prompts/quizPromptTemplate");
 const {
-  promptTemplate,
+  checkAnswerPromptTemplate,
+} = require("./prompts/checkAnswerPromptTemplate");
+const {
+  updateKeyTermAndConceptTemplate,
+} = require("./prompts/keyTermsAndConceptsPromptTemplate");
+const {
   chatbotPromptTemplate,
   titlePromptTemplate,
-  quizPromptTemplate,
-  checkAnswerPromptTemplate,
-  updateKeyTermAndConceptTemplate,
-} = require("./prompts/prompt");
-const { Firestore } = require("firebase-admin/firestore");
+} = require("./prompts/chatbotPromptTemplate");
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const REGION = "asia-northeast3";
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const textModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const jsonModel = genAI.getGenerativeModel({
+  model: "gemini-1.5-flash",
+  generationConfig: { responseMimeType: "application/json" },
+});
 
 admin.initializeApp();
 
@@ -52,7 +61,7 @@ exports.checkAnswer = functions.region(REGION).https.onCall(async (data) => {
   });
 
   try {
-    const result = await model.generateContent(prompt);
+    const result = await textModel.generateContent(prompt);
     text = result.response.text();
 
     const jsonWithoutCodeBlock = text.replace(/^```json|```$/g, "");
@@ -91,10 +100,8 @@ exports.generateRecap = functions.region(REGION).https.onCall(async (data) => {
   let text;
 
   try {
-    const result = await model.generateContent(prompt);
-    text = result.response.text();
-    const jsonWithoutCodeBlock = text.replace(/^```json|```$/g, "");
-    text = JSON.parse(jsonWithoutCodeBlock);
+    const result = await jsonModel.generateContent(prompt);
+    text = JSON.parse(result.response.text());
   } catch (error) {
     console.error("Error generating recap:", error);
     functions.logger.error("Error generating recap:", error);
@@ -177,13 +184,10 @@ exports.updateKeyTerms = functions
     });
 
     try {
-      const result = await model.generateContent(prompt);
-      console.log(result.response.text());
-      functions.logger.log(result.response.text());
+      const result = await jsonModel.generateContent(prompt);
       const text = result.response.text();
-      const jsonWithoutCodeBlock = text.replace(/^```json|```$/g, "");
 
-      const { key_terms, key_concepts } = JSON.parse(jsonWithoutCodeBlock);
+      const { key_terms, key_concepts } = JSON.parse(text);
 
       if (!key_terms || !key_concepts) {
         throw new Error("No text returned from API");
@@ -239,7 +243,7 @@ exports.chatbot = functions
       });
 
       try {
-        const result = await model.generateContent(prompt);
+        const result = await textModel.generateContent(prompt);
         const text = result.response.text();
 
         await change.after.ref.update({
@@ -262,7 +266,7 @@ exports.chatbot = functions
             lastTwoMessages,
           });
 
-          const titleResult = await model.generateContent(titlePrompt);
+          const titleResult = await textModel.generateContent(titlePrompt);
           const titleText = titleResult.response.text();
 
           await change.after.ref.update({
