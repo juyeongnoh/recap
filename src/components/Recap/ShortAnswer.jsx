@@ -101,12 +101,14 @@ const ShortAnswer = ({ recapData }) => {
   return (
     <div className="flex flex-col gap-12">
       <div className="flex items-center justify-between mt-2">
-        <button
-          onClick={() => navigate(`/recap/${noteId}`)}
-          className="p-2 text-2xl top-4 hover:bg-blue-100 rounded-xl">
-          <FaAngleLeft />
-        </button>
-        <h2 className="text-2xl font-semibold">Short Answer</h2>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate(`/recap/${noteId}`)}
+            className="p-2 text-2xl top-4 hover:bg-blue-100 rounded-xl">
+            <FaAngleLeft />
+          </button>
+          <h2 className="text-2xl font-semibold">Short Answer</h2>
+        </div>
         {status !== "CORRECT" && (
           <button
             className="flex items-center justify-center w-32 h-10 font-bold text-white bg-blue-500 hover:bg-blue-400 rounded-xl disabled:bg-gray-500"

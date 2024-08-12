@@ -347,53 +347,57 @@ const Recap = () => {
                     className="absolute p-2 text-2xl top-4 hover:bg-blue-100 rounded-xl">
                     <FaAngleLeft />
                   </button>
-                  <div className="absolute flex flex-col gap-24 pb-32 -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
-                    <div className="text-4xl font-light text-center whitespace-nowrap">
-                      What type of questions would you like to create?
-                    </div>
-                    <div className="relative h-72">
-                      {isGenerating ? (
-                        <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
-                          <PulseLoader color="#3b82f6" />
-                        </div>
-                      ) : (
-                        <div className="flex gap-8">
-                          <button
-                            className="p-4 text-left transition-colors duration-300 ease-in-out bg-blue-100 h-72 w-72 rounded-2xl hover:bg-blue-500 hover:text-white"
-                            onClick={() => generateRecap("key_terms")}>
-                            <FaRegFileWord className="mb-8 text-6xl" />
-                            <div className="text-3xl font-bold">Key Terms</div>
-                            <p className="mt-2 text-sm">
-                              Focus on defining and recalling important terms
-                              from the document.
-                            </p>
-                          </button>
-                          <button
-                            className="p-4 text-left transition-colors duration-300 ease-in-out bg-blue-100 h-72 w-72 rounded-2xl hover:bg-blue-500 hover:text-white"
-                            onClick={() => generateRecap("key_concepts")}>
-                            <FaSearch className="mb-8 text-6xl" />
-                            <div className="text-3xl font-bold">
-                              Key Concepts
-                            </div>
-                            <p className="mt-2 text-sm">
-                              Test your understanding of the main ideas and
-                              principles discussed.
-                            </p>
-                          </button>
-                          <button
-                            className="p-4 text-left transition-colors duration-300 ease-in-out bg-blue-100 h-72 w-72 rounded-2xl hover:bg-blue-500 hover:text-white"
-                            onClick={() => generateRecap("application")}>
-                            <FaCheck className="mb-8 text-6xl" />
-                            <div className="text-3xl font-bold">
-                              Application
-                            </div>
-                            <p className="mt-2 text-sm">
-                              Apply the knowledge to solve problems or answer
-                              scenario-based questions.
-                            </p>
-                          </button>
-                        </div>
-                      )}
+                  <div className="flex items-center justify-center h-full">
+                    <div>
+                      <div className="text-4xl font-light text-center mb-28 whitespace-nowrap">
+                        What type of questions would you like to create?
+                      </div>
+                      <div className="relative h-72">
+                        {isGenerating ? (
+                          <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+                            <PulseLoader color="#3b82f6" />
+                          </div>
+                        ) : (
+                          <div className="flex gap-8">
+                            <button
+                              className="p-4 text-left transition-colors duration-300 ease-in-out bg-blue-100 h-72 w-72 rounded-2xl hover:bg-blue-500 hover:text-white"
+                              onClick={() => generateRecap("key_terms")}>
+                              <FaRegFileWord className="mb-8 text-6xl" />
+                              <div className="text-3xl font-bold">
+                                Key Terms
+                              </div>
+                              <p className="mt-2 text-sm">
+                                Focus on defining and recalling important terms
+                                from the document.
+                              </p>
+                            </button>
+                            <button
+                              className="p-4 text-left transition-colors duration-300 ease-in-out bg-blue-100 h-72 w-72 rounded-2xl hover:bg-blue-500 hover:text-white"
+                              onClick={() => generateRecap("key_concepts")}>
+                              <FaSearch className="mb-8 text-6xl" />
+                              <div className="text-3xl font-bold">
+                                Key Concepts
+                              </div>
+                              <p className="mt-2 text-sm">
+                                Test your understanding of the main ideas and
+                                principles discussed.
+                              </p>
+                            </button>
+                            <button
+                              className="p-4 text-left transition-colors duration-300 ease-in-out bg-blue-100 h-72 w-72 rounded-2xl hover:bg-blue-500 hover:text-white"
+                              onClick={() => generateRecap("application")}>
+                              <FaCheck className="mb-8 text-6xl" />
+                              <div className="text-3xl font-bold">
+                                Application
+                              </div>
+                              <p className="mt-2 text-sm">
+                                Apply the knowledge to solve problems or answer
+                                scenario-based questions.
+                              </p>
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
