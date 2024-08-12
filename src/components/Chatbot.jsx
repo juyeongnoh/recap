@@ -11,6 +11,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { db } from "../firebase";
 import { FaAngleLeft, FaArrowUp, FaRegTrashAlt } from "react-icons/fa";
+import { PulseLoader } from "react-spinners";
 
 const Chatbot = () => {
   const { noteId } = useParams();
@@ -20,6 +21,7 @@ const Chatbot = () => {
 
   const [title, setTitle] = useState("");
   const [messages, setMessages] = useState([]);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const messageRef = useRef(null);
 
@@ -54,6 +56,7 @@ const Chatbot = () => {
       messages: [],
       createdAt: serverTimestamp(),
       modifiedAt: serverTimestamp(),
+      isGenerating: false,
     });
 
     setDocumentId(docRef.id);
@@ -109,6 +112,7 @@ const Chatbot = () => {
     const unsubscribe = onSnapshot(docRef, (doc) => {
       setTitle(doc.data().title);
       setMessages(doc.data().messages);
+      setIsGenerating(doc.data().isGenerating);
     });
 
     return () => unsubscribe();
@@ -149,7 +153,9 @@ const Chatbot = () => {
                     } mb-2`}>
                     <div
                       className={`p-2 rounded-xl w-3/4 ${
-                        message.sender === "user" ? "bg-gray-100" : "bg-sky-100"
+                        message.sender === "user"
+                          ? "bg-gray-100"
+                          : "bg-blue-100"
                       }`}>
                       <div className="text-sm font-bold">
                         {message.sender === "user" ? "You" : "Chatbot"}
@@ -158,6 +164,18 @@ const Chatbot = () => {
                     </div>
                   </div>
                 ))}
+                {isGenerating && (
+                  <div className="flex justify-start mb-2">
+                    <div className="w-3/4 p-2 bg-blue-100 rounded-xl">
+                      <p className="text-sm">
+                        <div className="text-sm font-bold">Chatbot</div>
+                        <div className="py-2">
+                          <PulseLoader color="#3b82f6" size={8} />
+                        </div>
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

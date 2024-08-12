@@ -10,6 +10,7 @@ const KeyConcepts = () => {
   const { noteId } = useParams();
   const [keyConcepts, setKeyConcepts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const fetchKeyConcepts = () => {
     setIsLoading(true);
@@ -17,6 +18,7 @@ const KeyConcepts = () => {
     const docRef = doc(db, "notes", noteId, "gemini", "keyconcepts");
     const unsubscribe = onSnapshot(docRef, (doc) => {
       setKeyConcepts(doc.data().keyConcepts);
+      setIsGenerating(doc.data().isGenerating);
       setIsLoading(false);
     });
 
@@ -42,8 +44,13 @@ const KeyConcepts = () => {
       </div>
     </div>
   ) : (
-    <div className="flex flex-col h-full gap-4">
-      {keyConcepts.length ? (
+    <div className="relative flex flex-col h-full gap-4 ">
+      {isGenerating && (
+        <div className="absolute top-0 left-0 flex items-center justify-center w-full h-full bg-white">
+          <PulseLoader color="#3b82f6" />
+        </div>
+      )}
+      {keyConcepts?.length ? (
         keyConcepts.map((keyConcept, index) => {
           const { concept, description } = keyConcept;
           const example = keyConcept.example || "";

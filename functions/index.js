@@ -136,10 +136,12 @@ exports.setKeyTermsAndConceptsWithEmptyArray = functions
     try {
       await snapshot.ref.collection("gemini").doc("keyterms").set({
         keyTerms: [],
+        isGenerating: false,
       });
 
       await snapshot.ref.collection("gemini").doc("keyconcepts").set({
         keyConcepts: [],
+        isGenerating: false,
       });
     } catch (error) {
       console.error("Error generating key terms:", error);
@@ -184,23 +186,47 @@ exports.updateKeyTerms = functions
     });
 
     try {
+      await change.after.ref.collection("gemini").doc("keyterms").set({
+        isGenerating: true,
+      });
+
+      await change.after.ref.collection("gemini").doc("keyconcepts").set({
+        isGenerating: true,
+      });
+
       const result = await jsonModel.generateContent(prompt);
       const text = result.response.text();
 
       const { key_terms, key_concepts } = JSON.parse(text);
 
       if (!key_terms || !key_concepts) {
+        await change.after.ref.collection("gemini").doc("keyterms").set({
+          isGenerating: false,
+        });
+
+        await change.after.ref.collection("gemini").doc("keyconcepts").set({
+          isGenerating: false,
+        });
         throw new Error("No text returned from API");
       }
 
       await change.after.ref.collection("gemini").doc("keyterms").set({
         keyTerms: key_terms,
+        isGenerating: false,
+      });
+      await change.after.ref.collection("gemini").doc("keyconcepts").set({
+        keyConcepts: key_concepts,
+        isGenerating: false,
+      });
+    } catch (error) {
+      await change.after.ref.collection("gemini").doc("keyterms").set({
+        isGenerating: false,
       });
 
       await change.after.ref.collection("gemini").doc("keyconcepts").set({
-        keyConcepts: key_concepts,
+        isGenerating: false,
       });
-    } catch (error) {
+
       console.error("Error generating key terms:", error);
     }
   });
@@ -243,6 +269,10 @@ exports.chatbot = functions
       });
 
       try {
+        await change.after.ref.update({
+          isGenerating: true,
+        });
+
         const result = await textModel.generateContent(prompt);
         const text = result.response.text();
 
@@ -255,6 +285,7 @@ exports.chatbot = functions
             },
           ],
           modifiedAt: Firestore.FieldValue.serverTimestamp(),
+          isGenerating: false,
         });
 
         // 채팅방의 제목이 없으면 생성
@@ -274,6 +305,9 @@ exports.chatbot = functions
           });
         }
       } catch (error) {
+        await change.after.ref.update({
+          isGenerating: false,
+        });
         console.error("Error generating chatbot message:", error);
       }
     }

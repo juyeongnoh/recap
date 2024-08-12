@@ -10,6 +10,7 @@ const KeyTerms = () => {
   const { noteId } = useParams();
   const [keyTerms, setKeyTerms] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const fetchKeyTerms = () => {
     setIsLoading(true);
@@ -17,6 +18,7 @@ const KeyTerms = () => {
     const docRef = doc(db, "notes", noteId, "gemini", "keyterms");
     const unsubscribe = onSnapshot(docRef, (doc) => {
       setKeyTerms(doc.data().keyTerms);
+      setIsGenerating(doc.data().isGenerating);
       setIsLoading(false);
     });
 
@@ -35,6 +37,10 @@ const KeyTerms = () => {
     return () => unsubscribe();
   }, [noteId]);
 
+  useEffect(() => {
+    console.log("keyTerms", keyTerms);
+  }, [keyTerms]);
+
   return isLoading ? (
     <div className="relative h-full">
       <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
@@ -42,8 +48,13 @@ const KeyTerms = () => {
       </div>
     </div>
   ) : (
-    <div className="flex flex-col h-full gap-4">
-      {keyTerms.length ? (
+    <div className="relative flex flex-col h-full gap-4">
+      {isGenerating && (
+        <div className="absolute top-0 left-0 flex items-center justify-center w-full h-full bg-white">
+          <PulseLoader color="#3b82f6" />
+        </div>
+      )}
+      {keyTerms?.length ? (
         keyTerms.map((keyTerm, index) => {
           const { term, meaning } = keyTerm;
           return (
