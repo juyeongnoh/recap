@@ -79,7 +79,7 @@ exports.quizPromptTemplate = {
     task:
       "You will be given a question_type which will be one of key_terms, key_concepts, or application. " +
       "Based on the given question_type, randomly determine one question_format from multiple_choice, " +
-      "short_answer, or fill_blank, ensuring that the probability of each format being selected is equal. " +
+      "short_answer, or fill_blank, with a slightly higher probability for selecting multiple_choice.” " +
       "Generate one question based on the selected question_format. Once the question_format is determined, " +
       "provide the output in the correct format: multiple_choice for multiple_choice, short_answer for " +
       "short_answer, or fill_blank for fill_blank. The output must be in JSON format. Since the quiz is for " +
