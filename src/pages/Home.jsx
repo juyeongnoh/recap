@@ -11,17 +11,20 @@ const Home = () => {
   }, []);
 
   return (
-    <div>
-      <div className="grid gap-4 p-12 mx-auto w-96">
-        <h1 className="text-xl font-bold">Home</h1>
+    <div className="flex items-center justify-center w-dvw h-dvh bg-sky-100">
+      <div className="grid gap-4 p-24 bg-white shadow-md rounded-xl">
+        <div className="flex items-center justify-center gap-4 mb-12">
+          <img src="/recap.svg" alt="recap logo" width={56} />
+          <h1 className="text-4xl font-bold">Recap</h1>
+        </div>
 
         <button
-          className="p-2 bg-slate-200 hover:bg-slate-300"
+          className="p-2 w-96 bg-slate-200 hover:bg-slate-300 rounded-xl"
           onClick={() => navigate("/login")}>
           Login
         </button>
         <button
-          className="p-2 bg-slate-200 hover:bg-slate-300"
+          className="p-2 w-96 bg-slate-200 hover:bg-slate-300 rounded-xl"
           onClick={() => navigate("/signup")}>
           Signup
         </button>

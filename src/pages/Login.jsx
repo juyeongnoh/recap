@@ -37,14 +37,14 @@ const Login = () => {
   };
 
   return (
-    <div className="w-screen h-screen">
-      <div className="grid gap-4 p-12 mx-auto w-96">
-        <h1 className="text-xl font-bold">Login</h1>
+    <div className="flex items-center justify-center w-dvw h-dvh bg-sky-100">
+      <div className="grid gap-4 p-24 bg-white shadow-md rounded-xl">
+        <h1 className="text-xl font-bold text-center">Login</h1>
         <form className="grid gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-2">
             <label>Email</label>
             <input
-              className="p-2 border border-slate-400 rounded-xl"
+              className="p-2 border w-96 border-slate-400 rounded-xl"
               type="email"
               name="email"
               value={loginCredentials.email}
@@ -54,7 +54,7 @@ const Login = () => {
           <div className="flex flex-col gap-2">
             <label>Password</label>
             <input
-              className="p-2 border border-slate-400 rounded-xl"
+              className="p-2 border w-96 border-slate-400 rounded-xl"
               type="password"
               name="password"
               value={loginCredentials.password}
@@ -62,7 +62,9 @@ const Login = () => {
             />
           </div>
 
-          <button className="p-2 bg-slate-200 hover:bg-slate-300" type="submit">
+          <button
+            className="p-2 w-96 bg-slate-200 hover:bg-slate-300 rounded-xl"
+            type="submit">
             Login
           </button>
         </form>
@@ -70,15 +72,9 @@ const Login = () => {
         {error && <div className="text-red-500">{error}</div>}
 
         <button
-          className="p-2 bg-slate-200 hover:bg-slate-300"
+          className="p-2 w-96 bg-slate-200 hover:bg-slate-300 rounded-xl"
           onClick={() => navigate("/")}>
           Home
-        </button>
-
-        <button
-          className="p-2 bg-slate-200 hover:bg-slate-300"
-          onClick={() => navigate("/signup")}>
-          Signup
         </button>
       </div>
     </div>
