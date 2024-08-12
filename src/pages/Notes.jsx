@@ -10,6 +10,7 @@ import {
   onSnapshot,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -174,6 +175,7 @@ const Notes = () => {
       createdAt: serverTimestamp(),
       modifiedAt: serverTimestamp(),
     });
+
     navigate(`/notes/${docRef.id}`);
   };
 

@@ -140,7 +140,7 @@ const ShortAnswer = ({ recapData }) => {
         <form onSubmit={handleSubmit} className="flex gap-4">
           <input
             type="text"
-            className={`w-full p-2 border transition-colors duration-300 ease-in-out rounded-xl ${
+            className={`w-full p-2 border transition-colors duration-300 ease-in-out rounded-xl outline-none ${
               status === "INCORRECT" && "border-red-500"
             } ${status === "CORRECT" && "border-green-500"}`}
             onChange={handleInputChange}

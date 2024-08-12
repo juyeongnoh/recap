@@ -14,6 +14,10 @@ import {
 import {
   FaAngleLeft,
   FaCheck,
+  FaCheckCircle,
+  FaCircle,
+  FaMinus,
+  FaMinusCircle,
   FaPowerOff,
   FaRegFilePdf,
   FaRegFileWord,
@@ -421,9 +425,31 @@ const Recap = () => {
                         return (
                           <div
                             key={recap.id}
-                            className="p-4 mb-4 hover:bg-blue-100 rounded-xl ">
+                            className={`p-4 mb-4 rounded-xl ${
+                              recap.data.status === "CORRECT" && "bg-blue-100"
+                            } ${
+                              recap.data.status === "INCORRECT" && "bg-red-100"
+                            } ${
+                              recap.data.status === "NOT_ANSWERED_YET" &&
+                              "bg-gray-100"
+                            }`}>
                             <div className="flex justify-between">
                               <div className="flex items-center gap-2">
+                                {recap.data.status === "CORRECT" && (
+                                  <div className="flex items-center text-green-500">
+                                    <FaCheckCircle />
+                                  </div>
+                                )}
+                                {recap.data.status === "INCORRECT" && (
+                                  <div className="text-red-500">
+                                    <FaMinusCircle />
+                                  </div>
+                                )}
+                                {recap.data.status === "NOT_ANSWERED_YET" && (
+                                  <div className="text-gray-500">
+                                    <FaCircle />
+                                  </div>
+                                )}
                                 <Badge
                                   questionType={recap.data.question_type}
                                 />
@@ -523,10 +549,32 @@ const Recap = () => {
           <div className="overflow-scroll grow">
             {recapToExport.length ? (
               recapToExport?.map((recap, index) => {
+                console.log(recap);
                 return (
-                  <div key={recap.id} className="p-4 rounded-xl">
+                  <div
+                    key={recap.id}
+                    className={`p-4 mb-4 rounded-xl ${
+                      recap.data.status === "CORRECT" && "bg-blue-100"
+                    } ${recap.data.status === "INCORRECT" && "bg-red-100"} ${
+                      recap.data.status === "NOT_ANSWERED_YET" && "bg-gray-100"
+                    }`}>
                     <div className="flex justify-between">
                       <div className="flex items-center gap-2">
+                        {recap.data.status === "CORRECT" && (
+                          <div className="flex items-center text-green-500">
+                            <FaCheckCircle />
+                          </div>
+                        )}
+                        {recap.data.status === "INCORRECT" && (
+                          <div className="text-red-500">
+                            <FaMinusCircle />
+                          </div>
+                        )}
+                        {recap.data.status === "NOT_ANSWERED_YET" && (
+                          <div className="text-gray-500">
+                            <FaCircle />
+                          </div>
+                        )}
                         <Badge questionType={recap.data.question_type} />
                         <Badge questionType={recap.data.question_format} />
                       </div>
